@@ -6,7 +6,7 @@
       class="defaultscroll sticky"
       :class="{ 'bg-white': isWhiteNavbar === true }"
     >
-      <div class="container">
+      <div class="container"> 
         <!-- Logo container-->
         <div>
           <router-link class="logo" to="/" v-if="navLight !== true">

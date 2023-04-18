@@ -44,14 +44,24 @@
                                                         <div class="form-group">
                                                             <label>Password <span class="text-danger">*</span></label>
                                                                 <div class="position-relative">
-                                                            <router-link to="#" class="text-dark">
-                                                                <EyeIcon @click="showPassword" v-if="!showPass" class="fea icon-sm icons"></EyeIcon>
-                                                                <EyeOffIcon @click="hidePassword" v-else class="fea icon-sm icons"></EyeOffIcon>
-                                                            </router-link>
-                                                            <b-form-input v-model="form.password" :state="passwordState" :type="passType" class="form-control pl-5" placeholder="Password" required></b-form-input>
-                                                            <b-form-invalid-feedback id="input-live-feedback">
-                                                                {{ feedback }}
-                                                            </b-form-invalid-feedback>
+                                                                    <div >
+                                                                        <b-input-group>
+                                                                            <b-button v-if="!showPass" @click="showPassword"  variant="light" squared>
+                                                                                <b  class="mdi mdi-eye-outline"></b>
+                                                                            </b-button>
+                                                                            <b-button @click="hidePassword" v-else  variant="light" squared>
+                                                                                <b  class="mdi mdi-eye-off"></b>
+                                                                            </b-button>
+                                                                                <b-form-input v-model="form.password" :state="passwordState" :type="passType" class="form-control pl-5" placeholder="Password" required></b-form-input>
+                                                                                <b-form-invalid-feedback id="input-live-feedback">
+                                                                                    {{ feedback }}
+                                                                                </b-form-invalid-feedback>
+                                                                        </b-input-group>
+                                                                            
+                                                                    </div>
+                                                                    <div>
+                                                                    </div>
+                                                           
                                                         </div>
                                                         </div>
                                                     </div>

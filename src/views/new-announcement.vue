@@ -234,8 +234,11 @@
                             </div>
                             <div id="map"></div>
                           </div>
-                          <input v-if="markers.length > 0" id="range" class="form-control" @change="createBuffer" type="range" min="0" max="100" step="1" v-model="bufferRadius">
-                          <b style="font-size: 12px;" v-if="markers.length > 0">The Range is {{bufferRadius}} Km</b>
+                          <input v-if="markers.length > 0" id="range" class="form-control" @change="createBuffer" type="range" min="0" max="101" step="1" v-model="bufferRadius">
+                          <b style="font-size: 14px;" v-if="markers.length > 0">- 
+                            <b v-if="bufferRadius > 100">Match finding announcements everywhere</b>
+                             <b v-else>Limit matching to specified location(s) within an area of {{bufferRadius}} Km</b>
+                          </b>
                           
                     </b-col>
                     <b-col sm="4">
@@ -2241,53 +2244,59 @@ export default {
             // Display directions on map
             if (this.directionsRenderer2) {
                 this.directionsRenderer2.setDirections(response);
+               if (this.bufferRadius < 101) {
                 if (this.markers.length === 1) {
                   
-                    // Create a buffer as a circle around the marker
-                    const marker = this.allMarkers[0].marker;
-                    const center = marker.getPosition();
-                    const radius = this.bufferRadius * 1000;
-                    const options = {
-                      strokeColor: "#007aff",
-                      strokeOpacity: 0.8,
-                      strokeWeight: 2,
-                      fillColor: "#007aff",
-                      fillOpacity: 0.35,
-                      map: this.map2,
-                      center: center,
-                      radius: radius,
-                    };
-                    const circle = new google.maps.Circle(options);
-                    // Remove the old buffer
-                    if (this.circle) {
-                      this.circle.setMap(null);
-                    }
-                    this.circle = circle;
-                  } else if (this.directionsCalculated) {
-                 
-                    // Remove the old buffer
-                    if (this.circle) {
-                      this.circle.setMap(null);
-                    }
-                    // Create a buffer around the route
-                    const lineString = turf.lineString(this.allWaysPoints.map(point => [point.lng, point.lat]));
-                    const buffer = turf.buffer(lineString, this.bufferRadius, { units: "kilometers" });
-                    const coordinates = buffer.geometry.coordinates[0].map((point) => {
-                      return { lat: point[1], lng: point[0] };
-                    });
-                    // Create a new buffer polygon
-                    const options = {
-                      paths: coordinates,
-                      strokeColor: "#007aff",
-                      strokeOpacity: 0.8,
-                      strokeWeight: 2,
-                      fillColor: "#007aff",
-                      fillOpacity: 0.35,
-                      map: this.map2,
-                    };
-                    const polygon = new google.maps.Polygon(options);
-                    this.circle = polygon;
+                  // Create a buffer as a circle around the marker
+                  const marker = this.allMarkers[0].marker;
+                  const center = marker.getPosition();
+                  const radius = this.bufferRadius * 1000;
+                  const options = {
+                    strokeColor: "#007aff",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: "#007aff",
+                    fillOpacity: 0.35,
+                    map: this.map2,
+                    center: center,
+                    radius: radius,
+                  };
+                  const circle = new google.maps.Circle(options);
+                  // Remove the old buffer
+                  if (this.circle) {
+                    this.circle.setMap(null);
                   }
+                  this.circle = circle;
+                } else if (this.directionsCalculated) {
+               
+                  // Remove the old buffer
+                  if (this.circle) {
+                    this.circle.setMap(null);
+                  }
+                  // Create a buffer around the route
+                  const lineString = turf.lineString(this.allWaysPoints.map(point => [point.lng, point.lat]));
+                  const buffer = turf.buffer(lineString, this.bufferRadius, { units: "kilometers" });
+                  const coordinates = buffer.geometry.coordinates[0].map((point) => {
+                    return { lat: point[1], lng: point[0] };
+                  });
+                  // Create a new buffer polygon
+                  const options = {
+                    paths: coordinates,
+                    strokeColor: "#007aff",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: "#007aff",
+                    fillOpacity: 0.35,
+                    map: this.map2,
+                  };
+                  const polygon = new google.maps.Polygon(options);
+                  this.circle = polygon;
+                }
+               }else{
+                if (this.circle) {
+                    this.circle.setMap(null);
+                  }
+               }
             }
             // Set the same directions on the directionsRenderer2 object
             // Save response to component data
@@ -2298,7 +2307,8 @@ export default {
 
             /* this.createBuffer(); */
             } else {
-              const path = this.allMarkers.map((marker) => new google.maps.LatLng(marker.lat, marker.lng));
+              if (this.bufferRadius < 101) {
+                const path = this.allMarkers.map((marker) => new google.maps.LatLng(marker.lat, marker.lng));
               const polyline = new google.maps.Polyline({
                   path: path,
                   strokeColor: "#FF0000",
@@ -2373,9 +2383,15 @@ export default {
                   const polygon = new google.maps.Polygon(options);
                   this.circle = polygon;
                 }
+              }else{
+                if (this.circle) {
+                    this.circle.setMap(null);
+                  }
+              }
 
             }
         });
+       
             }
             return true
     },
@@ -2606,6 +2622,7 @@ export default {
         });
     },
     createBuffer() {
+     if (this.bufferRadius < 101) {
       if (this.markers.length === 1) {
         console.log('first hello');
         // Create a buffer as a circle around the marker
@@ -2654,6 +2671,11 @@ export default {
         const polygon = new google.maps.Polygon(options);
         this.buffer = polygon;
       }
+     }else{
+      if (this.buffer) {
+          this.buffer.setMap(null);
+        }
+     }
     },
     clearFile(itemIndex) {
       document.getElementById(itemIndex).value = "";

@@ -186,14 +186,15 @@
             label-class="font-weight-bold pt-0"
             class="mb-0"
           >
-            <div class="text-right">
-              <b-button variant="link" class="text-secondary">
-                <i class="mdi mdi-pencil"></i> Edit
-              </b-button>
-            </div>
-            <hr style="border:1px dashed rgba(128, 128, 128, 0.302);">
+            
+             <hr style="border:1px dashed rgba(128, 128, 128, 0.302);"> 
             <div v-for="(category, categoryIndex) in item.categories" :key="categoryIndex">
               <div v-if="category.category">
+                <div class="text-right">
+                  <b-button variant="link" class="text-secondary" @click="openCategoryModal(category.id)">
+                    <i class="mdi mdi-pencil"></i> Edit
+                  </b-button>
+                </div>
                 <b-form-group
                 :label="'Category '+(categoryIndex+1)"
                 label-for="nested-street"
@@ -246,9 +247,12 @@
               <div class="col-lg-4 col-md-6 col-12 mt-4 pt-2"
               v-for="(img, imgIndex) in item.images" :key="`image_${imgIndex}`">
                 
-                <b-card >
-                  <div class="card border-0 work-container work-modern position-relative d-block overflow-hidden rounded">
-                    <div class="card-body p-0 text-center">
+              <div class="text-center p-0 mb-2 mt-0">
+                <b-button variant="soft-danger" @click="removeImage(img , imgIndex , itemIndex)" size="sm">X Delete Image</b-button>
+              </div>
+              <b-card >
+                <div class="card border-0 work-container work-modern position-relative d-block overflow-hidden rounded">
+                  <div class="card-body p-0 text-center">
                       <img v-if="img.url != notFoundImage" :src="img.url" class="img-fluid" alt="work-image" style=" height:200px" @error="handleError(img)"/>
                       <img v-else :src="img.url" class="img-fluid" alt="work-image" @error="handleError(img)"/>
                       <div class="overlay-work bg-dark"></div>
@@ -338,12 +342,13 @@
         </template>
         <template #modal-footer>
         <div class="w-100">
-          <p class="float-left">Modal Footer Content</p>
-          <b-button variant="secondary" size="sm" class="float-right mx-2"  @click="generalModel=false"  >
+          
+          <b-button variant="secondary" size="sm" class="float-right mx-2"  @click="closeGeneralModal"  >
             Close
           </b-button>
-          <b-button variant="primary" size="sm" class="float-right mx-2"  @click="closeGeneralModal"  >
-            Save 
+          <b-button variant="primary" size="sm" class="float-right mx-2"  @click="saveGenelaDetailsUpdates"  >
+            <span v-if="buttonLoading">Saving <b-spinner small ></b-spinner></span> 
+            <span v-else>Save</span> 
           </b-button>
           </div>
         </template>
@@ -394,6 +399,77 @@
             ></b-form-datepicker>
           </b-form-group>
       </b-modal>
+     <b-modal size="lg" centered v-model="categoryEditModal" no-close-on-esc no-close-on-backdrop hide-header-close>
+        <template #modal-header>
+          <b>Edit Category</b><i class="mdi mdi-pencil"></i>
+        </template>
+        <template #modal-footer>
+        <div class="w-100">
+          
+          <b-button variant="secondary" size="sm" class="float-right mx-2"  @click="categoryEditModal = false"  >
+            Close
+          </b-button>
+          <b-button variant="primary" size="sm" class="float-right mx-2"  @click="saveCategoryUpdates"  > 
+            <span v-if="buttonLoading">Saving <b-spinner small ></b-spinner></span> 
+            <span v-else>Save</span> 
+          </b-button>
+          </div>
+        </template>
+          <b-form-group
+            label="Category:"
+            label-for="nested-street"
+            label-cols-sm="3"
+            label-align-sm="right"
+          >
+              <v-select
+              v-model="category"
+              placeholder="Select category"
+              :options="categories"
+              @input="showSubCategory(category)"
+              style="
+                --vs-controls-color: #202842;
+                --vs-border-color: #202842;
+                --vs-dropdown-bg: white;
+                --vs-dropdown-color: #cc99cd;
+                --vs-dropdown-option-color: #202842;
+                --vs-selected-bg: rgba(90, 109, 144, 0.1);
+                --vs-selected-color: #202842;
+                --vs-search-input-placeholder-color: gray;
+                --vs-search-input-color: #202842;
+                --vs-dropdown-option--active-bg: #202842;
+                --vs-dropdown-option--active-color: #eeeeee;
+                --vs-dropdown-max-height: 210px; 
+              "
+            />
+          </b-form-group>
+          <b-form-group
+          v-if="subCategories.length>0"
+            label="SubCategory:"
+            label-for="nested-street"
+            label-cols-sm="3"
+            label-align-sm="right"
+          >
+              <v-select
+              v-model="subCategory"
+              placeholder="Select category"
+              :options="subCategories"
+              style="
+                --vs-controls-color: #202842;
+                --vs-border-color: #202842;
+                --vs-dropdown-bg: white;
+                --vs-dropdown-color: #cc99cd;
+                --vs-dropdown-option-color: #202842;
+                --vs-selected-bg: rgba(90, 109, 144, 0.1);
+                --vs-selected-color: #202842;
+                --vs-search-input-placeholder-color: gray;
+                --vs-search-input-color: #202842;
+                --vs-dropdown-option--active-bg: #202842;
+                --vs-dropdown-option--active-color: #eeeeee;
+                --vs-dropdown-max-height: 210px;
+              "
+            />
+          </b-form-group>
+      </b-modal>
      
     </section>
     <!--end section-->
@@ -432,7 +508,6 @@ import {
 } from "vue-feather-icons";
 import * as turf from '@turf/turf';
 import { Carousel, Slide } from "vue-carousel";
-import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import VueSlickCarousel from "vue-slick-carousel";
 import "vue-slick-carousel/dist/vue-slick-carousel.css";
@@ -441,9 +516,9 @@ import Switcher from "@/components/switcher";
 import Footer from "@/components/footer";
 import axios from "../axios.config";
 import VueEasyLightbox from "vue-easy-lightbox";
-import html2pdf from 'html2pdf.js';
-import VueHtmlToPaper from 'vue-html-to-paper';
-import printOptions from '../print-object';
+import vSelect from "vue-select";
+import "vue-select/dist/vue-select.css";
+import Swal from 'sweetalert2';
 /**
  * Shop-product-detail component
  */
@@ -478,7 +553,16 @@ export default {
       noContactFound:'No contact details added',
       container :'',
       generalModel:false,
-      editGeneralDetails:''
+      editGeneralDetails:'',
+      buttonLoading:false,
+      categoryEditModal:false,
+      lost_sub_category_id:'',
+
+      //selections
+      categories:[],
+      category:null,
+      subCategories:[],
+      subCategory:null
     };
   },
   components: {
@@ -497,12 +581,45 @@ export default {
     UserIcon,
     CameraIcon,
     VueEasyLightbox,
-    StarIcon
+    StarIcon,
+    "v-select":vSelect
   },
   mounted() {
     this.getLost()
   },
   methods: {
+    getCategories(){
+      // get categories
+      axios.get("user/category/get").then(resp => {
+        this.categories = resp.data.data.categories.map(category => {
+          return {
+            id: category.id,
+            label: category.title
+          };
+        });
+      });
+    },
+    showSubCategory(data){
+      this.subCategories = [];
+      if (data == null) {
+        this.subCategories = [];
+        this.subCategory = null;
+      } else{
+        this.subCategory = null;
+        axios
+          .post("user/sub_category/get", { id: data.id })
+          .then(resp => {
+            this.subCategories = resp.data.data.category.sub_categories.map(
+              sub => {
+                return {
+                  id: sub.id,
+                  label: sub.title
+                };
+              }
+            );
+          });
+      }
+    },
     getLost(){
       this.loading = false
       axios.post('user/lost/get_id',{id:this.lost_id})
@@ -882,11 +999,86 @@ export default {
     },
     closeGeneralModal(){
       this.editGeneralDetails = ''
-      threadId.generalModel = false
+      this.generalModel = false
     },
-
-
+    saveGenelaDetailsUpdates(){
+      this.buttonLoading = true
+      axios.post('user/lost/update',{
+        id:this.lost_id ,
+        title:this.editGeneralDetails.title,
+        start_date:this.editGeneralDetails.start_date,
+        end_data:this.editGeneralDetails.end_data
+       })
+      .then(()=>{
+        this.generalModel = false
+        this.buttonLoading = false
+        this.getLost()
+      }).catch(()=>{
+        Swal.fire('Something went wrong, try again later')
+      })
+    },
+    removeImage(img , imgIndex , itemIndex){
+      Swal.fire({
+        title: img.title,
+        text: 'Are you sure you want to delete this image?',
+        imageUrl: img.url,
+        imageWidth: 400,
+        confirmButtonColor: "#202842",
+        cancelButtonColor: '#d33',
+        imageAlt: 'Custom image',
+        confirmButtonText: 'Yes, delete it!',
+        showCancelButton: true,
+      }).then((result)=>{
+        if (result.isConfirmed) {
+          axios.post('user/lost/delete/image',{id:img.id})
+          .then(()=>{
+            this.items[itemIndex].images.splice(imgIndex,1)
+          })
+          .catch(()=>{
+            Swal.fire('Something went wrong, try again later')
+          })
+        }
+      })
+    },
+    openCategoryModal(id){
+      this.categoryEditModal = true
+      this.lost_sub_category_id = id
+      this.getCategories()
+    },
+    saveCategoryUpdates(){
+      if(this.subCategory != null){
+        Swal.fire({
+          title: 'Are you sure?',
+          text: "Confirm to change the category",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: "#202842",
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, Confirm!'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            axios.post('user/lost/sub_category/update',{
+              id:this.lost_sub_category_id,
+              sub_category_id : this.subCategory.id
+            }).then(()=>{
+              this.categoryEditModal = false
+              Swal.fire(
+                'Done!',
+                'The category has been updated.',
+                'success'
+              )
+              this.getLost()
+              this.lost_sub_category_id = ''
+            })
+            .catch(()=>{
+              Swal.fire('Something went wrong, try again later')
+            })
+          }
+        })
+      }
+    }
   },
+  
 };
 </script>
 <style scoped>

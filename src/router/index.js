@@ -360,6 +360,19 @@ const routes = [
     }
   },
   {
+    path: '/my-found-details',
+    name: 'my-found-details',
+    component: () => import('../views/my-found-details'),
+    beforeEnter: (to, from, next) => {
+      if (user) {
+        next()
+      } else {
+        console.log(user)
+        next('/page-error')
+      }
+    }
+  },
+  {
     path: '/my-Announcements',
     name: 'shop-cart',
     component: () => import('../views/my-Announcements'),

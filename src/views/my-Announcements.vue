@@ -453,7 +453,7 @@ import Swal from "sweetalert2";
             localStorage.removeItem("found_id")
             localStorage.setItem("found_id", id) 
             setTimeout(()=>{
-                this.$router.push('/my-lost-details')
+                this.$router.push('/my-found-details')
             },1000)
             
         },
