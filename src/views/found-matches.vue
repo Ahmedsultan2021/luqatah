@@ -36,7 +36,7 @@
 <!--end container-->
 </section>
 <div ref="myRef" class="text-center">
-  <h4><b><u>My Announcements</u></b></h4>  
+  <h4><b><u>Matches For Announcement No #{{ id }}</u></b></h4>  
 </div>
       <!--end section-->
       <div class="position-relative">
@@ -59,7 +59,7 @@
         <div  v-if="!loading" class="container">
           <!--end row-->
           <b-tabs card fill >
-            <b-tab title="Lost">
+            <b-tab v-if="myLost.length >0" title="Matches Found">
                 <b-row class="justify-content-end">
                     <b-col class="text-right" sm="4">
                         <div>
@@ -77,7 +77,7 @@
                                 --vs-search-input-color: #202842;
                                 --vs-dropdown-option--active-bg: #202842;
                                 --vs-dropdown-option--active-color: #eeeeee;
-                                --vs-dropdown-max-height: 210px;
+                                --vs-dropdown-max-height: 210px; 
                             "></v-select>
                         </div>
                     </b-col>
@@ -89,7 +89,7 @@
                           <ul class="list-unstyled mb-4">
                             <li class="h6">
                               <b class="mdi mdi-pound text-primary"></b>
-                              <span class="text-dark">  Announcement Number :</span> <b class="text-primary float-right">{{data.id}}</b>
+                              <span class="text-dark">  Announcement Number :</span> <b class="text-primary float-right">{{data.lost_id}}</b>
                             </li>
                             <hr>
                             <li class="h6">
@@ -112,28 +112,25 @@
                             <hr>
                             <li class="h6">
                               <b class="mdi mdi-lock-question text-primary"></b>
-                              <span class="text-muted">  activation :  </span>
+                              <span class="text-muted">  Mark as seen :  </span>
                              
-                              <b-form-checkbox @change="activateAnnouncement(data)" class="float-right" v-model="data.user_status" switch size="sm">
-                                <b  v-if="data.user_status"><b-badge  variant="success">Activated</b-badge></b> 
-                              <b  v-else> <b-badge  variant="danger">De Activated</b-badge></b>
+                              <b-form-checkbox @change="markAsSeen(data)" class="float-right" v-model="data.seen" switch size="sm">
+                                <b  v-if="data.seen"><b-badge  variant="success">seen</b-badge></b> 
+                              <b  v-else> <b-badge  variant="outline-dark">not seen</b-badge></b>
                                 </b-form-checkbox>
                             </li>
-                            <li>
-                               <div class="d-flex justify-content-between"> 
-                                <span class="text-muted">Matchings Email Notification</span><br>  
-                                <b-form-checkbox @change="updateEmailMatching(data)" class="mt-1" v-model="data.matching_email" switch size="sm">
-                                  <b v-if="data.matching_email" class="mdi mdi-email-outline text-secondary"></b>
-                                  <b v-else class="mdi mdi-email-off-outline text-secondary"></b>
+                            <li class="h6">
+                              <b class="mdi mdi-lock-question text-primary"></b>
+                              <span class="text-muted">  Bookmark :  </span>
+                             
+                              <b-form-checkbox @change="addBookmark(data)" class="float-right" v-model="data.bookmark" switch size="sm">
+                                <b  v-if="data.bookmark"><b style="font-size: 14px;"  class="mdi mdi-bookmark text-primary"></b></b> 
+                              <b  v-else> <b  style="font-size: 14px;" class="mdi mdi-bookmark-outline"></b></b>
                                 </b-form-checkbox>
-                               </div>
                             </li>
+                            
                           </ul>
-                            <b-button class="mb-3" size="sm" @click="lostMatches(data.id)" block variant="soft-secondary">
-                                View Matches
-                            <arrow-right-icon class="fea icon-sm"></arrow-right-icon>
-                            </b-button>
-                            <b-button size="sm" @click="lostDetailsPage(data.id)" block variant="soft-primary">
+                            <b-button size="sm" @click="foundDetailsPage(data.lost_id)" block variant="soft-primary">
                                 View Announcement Details
                             <arrow-right-icon class="fea icon-sm"></arrow-right-icon>
                             </b-button>
@@ -141,8 +138,8 @@
                       </div>
                     </div>
                     <!--end col-->
-                  </div><hr>
-                  <div class="text-center mt-3">
+                </div><hr>
+                <div class="text-center mt-3">
                     <b-pagination-nav  v-if="lostPagination" class="justify-content-center pagination" :number-of-pages="lostLastpage" :link-gen="lostLinkGen" :value="lostCurrentPage" :per-page="50" align="center"  @change="(a)=>lostChangePage(a)">
                         <template v-slot:next-text>
                         <i class="mdi mdi-arrow-right" />
@@ -157,108 +154,9 @@
                         <i class="mdi mdi-page-last" />
                         </template>
                     </b-pagination-nav>
-            </div>
+                </div>
             </b-tab>
-            <b-tab title="Found">
-                <b-row class="justify-content-end">
-                    <b-col class="text-right" sm="4">
-                        <div>
-                            <b class="mdi mdi-sort mb-2">Sorting</b>
-                            <v-select @input="sortMyFound"  v-model="foundSelected" :options="options" placeholder="Sorting Options"
-                            style="
-                                --vs-controls-color: #202842;   
-                                --vs-border-color: #202842;
-                                --vs-dropdown-bg: white;
-                                --vs-dropdown-color: #cc99cd;
-                                --vs-dropdown-option-color: #202842;
-                                --vs-selected-bg: rgba(90, 109, 144, 0.1);
-                                --vs-selected-color: #202842;
-                                --vs-search-input-placeholder-color: gray;
-                                --vs-search-input-color: #202842;
-                                --vs-dropdown-option--active-bg: #202842;
-                                --vs-dropdown-option--active-color: #eeeeee;
-                                --vs-dropdown-max-height: 210px;  
-                            "></v-select>
-                        </div>
-                    </b-col>
-                </b-row>
-                <div class="row">
-                  <div class="col-lg-4 col-md-6 col-12 my-3 pt-2" v-for="(data, index) of myFound" :key="index">
-                      <div class="company-list card border-0 rounded shadow bg-white">
-                        <div class="p-4">
-                          <ul class="list-unstyled mb-4">
-                            <li class="h6">
-                              <b class="mdi mdi-pound text-primary"></b>
-                              <span class="text-dark">  Announcement Number :</span> <b class="text-primary float-right">{{data.id}}</b>
-                            </li>
-                            <hr>
-                            <li class="h6">
-                              <b class="mdi mdi-bullhorn-outline text-primary"></b>
-                              <span class="text-dark">  Title :</span> <b class="text-primary float-right">{{data.title}}</b>
-                            </li>
-                            <hr>
-                            <li class="h6">
-                              <b class="mdi mdi-calendar-start text-primary"></b>
-                              <span class="text-dark">  Creation Date: </span>
-                               <b class="text-primary float-right"> {{data.start_date}} </b>
-                            </li>
-                            <hr>
-                            <li class="h6">
-                                <b class="mdi mdi-calendar-start text-primary"></b>
-                                <span class="text-dark"> Lost Date Range</span>
-                                <b class="text-muted ml-4 float-right">From : <b class="text-primary"> {{data.start_date}} </b></b> <br>
-                                <b class="text-muted ml-4 float-right"> To : <b class="text-primary"> {{data.end_data}} </b></b><br> 
-                            </li>
-                            <hr>
-                            <li class="h6">
-                              <b class="mdi mdi-lock-question text-primary"></b>
-                              <span class="text-muted">  activation :  </span>
-                             
-                              <b-form-checkbox @change="foundActivateAnnouncement(data)" class="float-right" v-model="data.user_status" switch size="sm">
-                                <b  v-if="data.user_status"><b-badge  variant="success">Activated</b-badge></b> 
-                              <b  v-else> <b-badge  variant="danger">De Activated</b-badge></b>
-                                </b-form-checkbox>
-                            </li>
-                            <li>
-                               <div class="d-flex justify-content-between"> 
-                                <span class="text-muted">Matchings Email Notification</span><br>  
-                                <b-form-checkbox @change="foundUpdateEmailMatching(data)" class="mt-1" v-model="data.matching_email" switch size="sm">
-                                  <b v-if="data.matching_email" class="mdi mdi-email-outline text-secondary"></b>
-                                  <b v-else class="mdi mdi-email-off-outline text-secondary"></b>
-                                </b-form-checkbox>
-                               </div>
-                            </li>
-                          </ul>
-                            <b-button class="mb-3" size="sm" @click="foundMatches(data.id)" block variant="soft-secondary">
-                                View Matches
-                            <arrow-right-icon class="fea icon-sm"></arrow-right-icon>
-                            </b-button>
-                            <b-button size="sm" @click="foundDetailsPage(data.id)" block variant="soft-primary">
-                                View Announcement Details
-                            <arrow-right-icon class="fea icon-sm"></arrow-right-icon> 
-                            </b-button>
-                        </div>
-                      </div>
-                    </div>
-                    <!--end col-->
-                  </div><hr>
-                  <div class="text-center mt-3">
-                    <b-pagination-nav  v-if="foundPagination" class="justify-content-center pagination" :number-of-pages="foundLastpage" :link-gen="foundLinkGen" :value="foundCurrentPage" :per-page="50" align="center"  @change="(a)=>foundChangePage(a)">
-                        <template v-slot:next-text>
-                        <i class="mdi mdi-arrow-right" />
-                        </template>
-                        <template v-slot:prev-text>
-                        <i class="mdi mdi-arrow-left" />
-                        </template>
-                        <template v-slot:first-text>
-                        <i class="mdi mdi-page-first" />
-                        </template>
-                        <template v-slot:last-text>
-                        <i class="mdi mdi-page-last" />
-                        </template>
-                    </b-pagination-nav>
-            </div>
-            </b-tab>
+            <b-tab v-else title="No Matches Found"></b-tab>
           </b-tabs>
         </div>
         <div v-else class="text-center container bg-half">
@@ -295,6 +193,7 @@ import Swal from "sweetalert2";
   export default {
     data() {
       return {
+        id:localStorage.getItem('found_id'),
         loading:true,
         myLost:[],
         myFound:[],
@@ -331,21 +230,22 @@ import Swal from "sweetalert2";
     methods:{
         getLost(){
               /* this.loading=false */
-              axios.get('user/my_lost?page='+this.lostCurrentPage)
+              axios.post('user/matching/get_found_matching?page='+this.lostCurrentPage , {found_id:this.id})
               .then((resp)=>{
                    this.lostLastpage = resp.data.data.last_page
                   if(this.lostLastpage > 1){
                       this.lostPagination = true
                   } 
-                  this.myLost = resp.data.data.lost.map((lost)=>{
+                  this.myLost = resp.data.data.matchings.map((lost)=>{
                       return{
                           id : lost.id,
-                          title:lost.title,
-                          start_date:lost.start_date,
-                          end_data:lost.end_data,
-                          user_status:lost.user_status?false:true,
-                          status:lost.status, 
-                          matching_email:lost.matching_email  
+                          lost_id:lost.lost.id,
+                          title:lost.lost.title,
+                          start_date:lost.lost.start_date,
+                          end_data:lost.lost.end_data,
+                          seen:lost.lost.seen,
+                          status:lost.lost.status, 
+                          bookmark:lost.lost.bookmark  
                       }
                   })
                  /*  this.loading = true */
@@ -361,30 +261,6 @@ import Swal from "sweetalert2";
             this.getLost()
             const refElement = this.$refs.myRef;
             refElement.scrollIntoView({ behavior: "smooth" });
-        },
-        getFound(){
-              /* this.loading=false */
-              axios.get('user/my_found?page='+this.foundCurrentPage)
-              .then((resp)=>{
-                   this.foundLastpage = resp.data.data.last_page
-                  if(this.foundLastpage > 1){
-                      this.foundPagination = true
-                  } 
-                  this.myFound = resp.data.data.founds.map((lost)=>{
-                      return{
-                          id : lost.id,
-                          title:lost.title,
-                          start_date:lost.start_date,
-                          end_data:lost.end_data,
-                          user_status:lost.user_status,
-                          status:lost.status,  
-                          matching_email:lost.matching_email 
-                      }
-                  })
-                 /*  this.loading = true */
-              }).catch((err)=>{
-                  console.log(err)
-              })
         },
         foundLinkGen(pageNum) {
           return ;
@@ -449,46 +325,51 @@ import Swal from "sweetalert2";
             },1000)
             
         },
-        lostMatches(id){
-            localStorage.removeItem("lost_id")
-            localStorage.setItem("lost_id", id) 
-            setTimeout(()=>{
-                this.$router.push('/lost-matches')
-            },1000)
-            
-        },
-        foundMatches(id){
-            localStorage.removeItem("found_id")
-            localStorage.setItem("found_id", id) 
-            setTimeout(()=>{
-                this.$router.push('/found-matches')
-            },1000)
-            
-        },
-
         foundDetailsPage(id){
-            localStorage.removeItem("found_id")
-            localStorage.setItem("found_id", id) 
+            localStorage.removeItem("found_lost_id")
+            localStorage.setItem("found_lost_id", id) 
             setTimeout(()=>{
-                this.$router.push('/my-found-details')
+                this.$router.push('/lost-match-details')
             },1000)
             
         },
         
-        activateAnnouncement(data){
-          axios.post('user/lost/activate',{id:data.id})
+        markAsSeen(data){
+          axios.post('user/lost/seen',{lost_id:data.lost_id})
           .then((resp)=>{
-            if (resp.data.data.lost.user_status != "") {
+            if (resp.data.message == "Lost Seen added successfully") {
               Swal.fire({
-                title: "DeActivated",
-                text: "You announcement has been deactivated in "+resp.data.data.lost.user_status,
+                title: "Seen",
+                text: "This announcement has been Marked As Seen",
                 icon: "success",
                 confirmButtonColor: "#202842"
               });
             }else{
               Swal.fire({
-                title: "Activated",
-                text: "You announcement has been activated",
+                title: "Not Seen",
+                text: "This announcement has been Marked As Not Seen",
+                icon: "success",
+                confirmButtonColor: "#202842"
+              })
+            }
+          }).catch(()=>{
+            alert('ops')
+          })
+        },
+        addBookmark(data){
+          axios.post('user/lost/bookmark',{lost_id:data.lost_id})
+          .then((resp)=>{
+            if (resp.data.message == "Lost Bookmark added successfully") {
+              Swal.fire({
+                title: "Added to Bookmarks",
+                text: "This announcement has been Added to Bookmarks",
+                icon: "success",
+                confirmButtonColor: "#202842"
+              });
+            }else{
+              Swal.fire({
+                title: "Removed From Bookmarks",
+                text: "This announcement has been Removes From Bookmarks",
                 icon: "success",
                 confirmButtonColor: "#202842"
               })
@@ -568,7 +449,6 @@ import Swal from "sweetalert2";
       },
       mounted() {
         this.getLost()
-        this.getFound()
           setTimeout(() => {
             this.loading = false
           }, 3000);

@@ -27,6 +27,30 @@ const routes = [
     }
   },
   {
+    path: '/lost-matches',
+    component: () => import('../views/lost-matches'),
+    beforeEnter: (to, from, next) => {
+      if (user) {
+        next()
+      } else {
+        console.log(user)
+        next('/page-error')
+      }
+    }
+  },
+  {
+    path: '/found-matches',
+    component: () => import('../views/found-matches'),
+    beforeEnter: (to, from, next) => {
+      if (user) {
+        next()
+      } else {
+        console.log(user)
+        next('/page-error')
+      }
+    }
+  },
+  {
     path: '/index-saas',
     name: 'Saas',
     component: () => import('../views/index-saas')
@@ -350,6 +374,32 @@ const routes = [
     path: '/my-lost-details',
     name: 'my-lost-details',
     component: () => import('../views/my-lost-details'),
+    beforeEnter: (to, from, next) => {
+      if (user) {
+        next()
+      } else {
+        console.log(user)
+        next('/page-error')
+      }
+    }
+  },
+  {
+    path: '/lost-match-details',
+    name: 'lost-match-details',
+    component: () => import('../views/lost-match-details'),
+    beforeEnter: (to, from, next) => {
+      if (user) {
+        next()
+      } else {
+        console.log(user)
+        next('/page-error')
+      }
+    }
+  },
+  {
+    path: '/found-match-details',
+    name: 'found-match-details',
+    component: () => import('../views/found-match-details'),
     beforeEnter: (to, from, next) => {
       if (user) {
         next()

@@ -58,12 +58,12 @@
           <b-button variant="link" class="text-secondary" size="md" @click="print">
             <i class="mdi mdi-printer "></i><span class="ml-2">Print</span> 
           </b-button>
-          <!-- <b-button variant="link" class="text-secondary" size="md">
+          <b-button variant="link" class="text-secondary" size="md">
             <i class="mdi mdi-bookmark"></i><span class="ml-2">Bookmark</span>
           </b-button>
           <b-button variant="link" class="text-secondary" size="md">
             <i class="mdi mdi-alert-outline"></i><span class="ml-2">Report </span>
-          </b-button> -->
+          </b-button>
         </b-button-group>
         <hr>
       </div>
@@ -527,7 +527,7 @@ export default {
     return {
       type:'Lost',
       countval: 1,
-      lost_id:localStorage.getItem('lost_id'),
+      lost_id:localStorage.getItem('lost_found_id'),
       lost:'',
       locations:[],
       items:[],
@@ -622,10 +622,10 @@ export default {
     },
     getLost(){
       this.loading = false
-      axios.post('user/lost/get_id',{id:this.lost_id})
+      axios.post('user/found/get_id',{id:this.lost_id})
       .then((resp)=>{
         // this.editGeneralDetails = resp.data.data.lost
-        let lost = resp.data.data.lost
+        let lost = resp.data.data.found
         this.lost = lost
         if (lost.location_range) {
           this.range = lost.location_range
@@ -646,7 +646,7 @@ export default {
         this.items = lost.items.map((item)=>{
           return{
             id:item.id,
-            categories:item.lost_sub_category.map((c)=>{
+            categories:item.found_sub_category.map((c)=>{
               return{
                 id:c.id,
                 category:c.sub_category
@@ -671,7 +671,7 @@ export default {
            
           }
         })
-        
+        console.log(this.items)
         this.contact = lost.contact_details
         this.loading = true
       }).then(()=>{
@@ -1003,7 +1003,7 @@ export default {
     },
     saveGenelaDetailsUpdates(){
       this.buttonLoading = true
-      axios.post('user/lost/update',{
+      axios.post('user/found/update',{
         id:this.lost_id ,
         title:this.editGeneralDetails.title,
         start_date:this.editGeneralDetails.start_date,
@@ -1030,7 +1030,7 @@ export default {
         showCancelButton: true,
       }).then((result)=>{
         if (result.isConfirmed) {
-          axios.post('user/lost/delete/image',{id:img.id})
+          axios.post('user/found/delete/image',{id:img.id})
           .then(()=>{
             this.items[itemIndex].images.splice(imgIndex,1)
           })
@@ -1057,7 +1057,7 @@ export default {
           confirmButtonText: 'Yes, Confirm!'
         }).then((result) => {
           if (result.isConfirmed) {
-            axios.post('user/lost/sub_category/update',{
+            axios.post('user/found/sub_category/update',{
               id:this.lost_sub_category_id,
               sub_category_id : this.subCategory.id
             }).then(()=>{
