@@ -3384,6 +3384,13 @@ export default {
           lat:point.lat
         }
       })
+      }else{
+        directions =  this.markers.map((marker)=>{
+        return{
+          lat:marker.lat,
+          lng:marker.lng,
+        }
+      })
       }
 
       if (this.step_one.announcement_type == "Lost") {

@@ -6,47 +6,42 @@
       class="defaultscroll sticky"
       :class="{ 'bg-white': isWhiteNavbar === true }"
     >
-      <div class="container"> 
+      <div class="container">
         <!-- Logo container-->
         <div>
           <router-link class="logo" to="/" v-if="navLight !== true">
-            <img src="images/logo1.png" height="60" alt="" />
+            <img src="images/logo1.png" height="60" alt />
           </router-link>
           <router-link class="logo" to="/" v-else>
             <!-- <img src="images/logo-dark.png" class="l-dark" height="24" alt="" /> -->
-            <img
-              src="images/logo.png"
-              class="l-light"
-              height="24"
-              alt=""
-            />
+            <img src="images/logo.png" class="l-light" height="24" alt />
           </router-link>
         </div>
-        <div v-if="currentUser" class="buy-button " >
-          <b-dropdown size="sm" variant="link">
+        <div v-if="currentUser" class="buy-button">
+          <b-dropdown variant="link">
             <template #button-content>
-              <b style="font-size: 13px;" class="text-primary p-2">{{currentUser.full_name}}</b><b-avatar  variant="primary" size="md" rounded></b-avatar>
+              <b style="font-size: 13px;" class="text-primary p-2">{{currentUser.full_name}}</b>
+              <b-avatar variant="primary" size="md" rounded></b-avatar>
             </template>
-            <b-dropdown-item >
-              <b-button size="sm" @click="signOut" variant="outline-primary">Sign Out </b-button>
+            <b-dropdown-item @click="myProfilePage">
+              <b>My Profile</b>
             </b-dropdown-item>
-            
+            <b-dropdown-item @click="signOut">
+              <b>Logout</b>
+            </b-dropdown-item>
           </b-dropdown>
-        
         </div>
-        <div v-if="currentUser == null" class="buy-button" >
+        <div v-if="currentUser == null" class="buy-button">
           <a
             :href="login"
-            
             class="btn"
             :class="{
               'btn-light': navLight === true,
               'btn-primary': navLight !== true,
             }"
-            >Login/SignUp</a
-          >
+          >Login/SignUp</a>
         </div>
-        <ul class="buy-button list-inline mb-0" >
+        <ul class="buy-button list-inline mb-0">
           <!-- <li class="list-inline-item mb-0 developer-icon">
             <b-dropdown
               right
@@ -69,26 +64,23 @@
                 </form>
               </div>
             </b-dropdown>
-          </li> -->
+          </li>-->
           <li class="list-inline-item mb-0">
-            <b-dropdown
-            right
-            variant="link"
-            toggle-class="text-decoration-none p-0 "
-          >
-            <template #button-content>
-              <b style="font-size: 13px;" class="text-primary p-2">English</b>
-              <a
-              href="javascript:void(0)"
-              class="btn btn-icon btn-soft-primary"
-              data-toggle="modal"
-              data-target="#productview"
-              ><i class="mdi mdi-web mdi-18px icons"></i
-            ></a>
-            </template>
-            <b-dropdown-item @click="setLtr">English</b-dropdown-item>
-            <b-dropdown-item @click="setRtl">العربية</b-dropdown-item>
-          </b-dropdown>
+            <b-dropdown right variant="link" toggle-class="text-decoration-none p-0 ">
+              <template #button-content>
+                <b style="font-size: 13px;" class="text-primary p-2">English</b>
+                <a
+                  href="javascript:void(0)"
+                  class="btn btn-icon btn-soft-primary"
+                  data-toggle="modal"
+                  data-target="#productview"
+                >
+                  <i class="mdi mdi-web mdi-18px icons"></i>
+                </a>
+              </template>
+              <b-dropdown-item @click="setLtr">English</b-dropdown-item>
+              <b-dropdown-item @click="setRtl">العربية</b-dropdown-item>
+            </b-dropdown>
           </li>
           <!-- <li class="list-inline-item mb-0">
             <a
@@ -98,7 +90,7 @@
               data-target="#productview"
               ><i class="mdi mdi-account-outline mdi-18px icons"></i
             ></a>
-          </li> -->
+          </li>-->
         </ul>
         <!--end login button-->
         <!--end login button-->
@@ -106,11 +98,7 @@
         <div class="menu-extras">
           <div class="menu-item">
             <!-- Mobile menu toggle-->
-            <a
-              class="navbar-toggle"
-              @click="toggleMenu()"
-              :class="{ open: isCondensed === true }"
-            >
+            <a class="navbar-toggle" @click="toggleMenu()" :class="{ open: isCondensed === true }">
               <div class="lines">
                 <span></span>
                 <span></span>
@@ -125,67 +113,66 @@
           <!-- Navigation Menu-->
           <div class="buy-menu-btn d-lg-none m-2">
             <div v-if="currentUser == null">
-              <router-link :to="login"
-              class="btn"
-              :class="{
+              <router-link
+                :to="login"
+                class="btn"
+                :class="{
                 'btn-light': navLight === true,
                 'btn-primary': navLight !== true,
               }"
-              >Login/SignUp</router-link 
-            >
-           </div>
-           <div v-if="currentUser">
+              >Login/SignUp</router-link>
+            </div>
+            <div v-if="currentUser">
               <b-button class="text-decoration-none p-0 pr-2 mb-2" variant="link">
-               <b-avatar  variant="primary" size="md" rounded></b-avatar>
-               <b style="font-size: 13px;" class="text-primary p-2">{{currentUser.full_name}}</b>
+                <b-avatar variant="primary" size="md" rounded></b-avatar>
+                <b style="font-size: 13px;" class="text-primary p-2">{{currentUser.full_name}}</b>
               </b-button>
-              <b-button  @click="signOut" class="float-right" variant="outline-primary">
-                <b style="font-size: 13px;" class=" p-2">Sign Out</b>
-               </b-button>
-           </div>
+              <b-button @click="signOut" class="float-right" variant="outline-primary">
+                <b style="font-size: 13px;" class="p-2">Sign Out</b>
+              </b-button>
+            </div>
           </div>
-          <ul
-            class="navigation-menu"
-            :class="{ 'nav-light': navLight === true }"
-          >
+          <ul class="navigation-menu" :class="{ 'nav-light': navLight === true }">
             <li>
-              <router-link to="/" class="side-nav-link-ref"><p class="text-small" style="font-size: 12px;">Home</p> </router-link>
+              <router-link to="/" class="side-nav-link-ref">
+                <p class="text-small" style="font-size: 12px;">Home</p>
+              </router-link>
             </li>
             <li v-if="currentUser">
-              <router-link to="/my-Announcements" class="side-nav-link-ref"><p class="text-small" style="font-size: 12px;">My Announcement</p> </router-link>
+              <router-link to="/my-Announcements" class="side-nav-link-ref">
+                <p class="text-small" style="font-size: 12px;">My Announcement</p>
+              </router-link>
             </li>
             <li v-if="currentUser">
-              <router-link to="/" class="side-nav-link-ref"><p class="text-small" style="font-size: 12px;">Bookmarks</p> </router-link>
+              <router-link to="/my-bookmarks" class="side-nav-link-ref">
+                <p class="text-small" style="font-size: 12px;">Bookmarks</p>
+              </router-link>
             </li>
             <li>
-              <router-link to="/" class="side-nav-link-ref"><p class="text-small" style="font-size: 12px;">Help</p> </router-link>
+              <router-link to="/" class="side-nav-link-ref">
+                <p class="text-small" style="font-size: 12px;">Help</p>
+              </router-link>
             </li>
-            
           </ul>
           <!--end navigation menu-->
           <div class="buy-menu-btn d-lg-none">
-            <b-dropdown
-            right
-           
-            variant="link"
-            toggle-class="text-decoration-none p-0 pr-2 mb-2"
-          >
-            <template #button-content>
-              <a
-              href="javascript:void(0)"
-              class="btn btn-icon btn-link"
-              data-toggle="modal"
-              dropright 
-              data-target="#productview"
-              ><i class="mdi mdi-web mdi-18px icons text-primary"></i
-            ></a><b class="text-primary ml-1">Language</b>
-            </template>
-            <b-dropdown-item>English</b-dropdown-item>
-            <b-dropdown-item>العربية</b-dropdown-item>
-          </b-dropdown><br>
-          
-           
-         
+            <b-dropdown right variant="link" toggle-class="text-decoration-none p-0 pr-2 mb-2">
+              <template #button-content>
+                <a
+                  href="javascript:void(0)"
+                  class="btn btn-icon btn-link"
+                  data-toggle="modal"
+                  dropright
+                  data-target="#productview"
+                >
+                  <i class="mdi mdi-web mdi-18px icons text-primary"></i>
+                </a>
+                <b class="text-primary ml-1">Language</b>
+              </template>
+              <b-dropdown-item>English</b-dropdown-item>
+              <b-dropdown-item>العربية</b-dropdown-item>
+            </b-dropdown>
+            <br />
           </div>
           <!--end login button-->
         </div>
@@ -202,31 +189,31 @@
 /**
  * Navbar component
  */
- import { mapGetters,  mapActions } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 export default {
   data() {
     return {
       isCondensed: false,
-      login:'/login'
+      login: "/login"
     };
   },
   props: {
     isWhiteNavbar: {
-      type: Boolean,
+      type: Boolean
     },
     navLight: {
-      type: Boolean,
+      type: Boolean
     },
     isIcons: {
-      type: Boolean,
-    },
+      type: Boolean
+    }
   },
 
   mounted: () => {
-    window.onscroll = function () {
+    window.onscroll = function() {
       onwindowScroll();
     };
-   /*  console.log(this.currentUser) */
+    /*  console.log(this.currentUser) */
 
     function onwindowScroll() {
       if (
@@ -288,7 +275,7 @@ export default {
       /* document.getElementById("theme-opt").setAttribute("href", "./css/style-rtl.css"); */
     },
     setLtr() {
-    /*   document.getElementById("theme-opt").setAttribute("href", "./css/style.css"); */
+      /*   document.getElementById("theme-opt").setAttribute("href", "./css/style.css"); */
     },
     /**
      * Toggle menu
@@ -298,6 +285,9 @@ export default {
       if (this.isCondensed) {
         document.getElementById("navigation").style.display = "block";
       } else document.getElementById("navigation").style.display = "none";
+    },
+    myProfilePage() {
+      this.$router.push("/account-profile");
     },
 
     /**
@@ -318,13 +308,13 @@ export default {
       }
       return false;
     },
-    ...mapActions(["signOut"]),
+    ...mapActions(["signOut"])
   },
   computed: {
     ...mapGetters({
-      currentUser: "currentUser",
+      currentUser: "currentUser"
     })
-  },
+  }
 };
 </script>
 

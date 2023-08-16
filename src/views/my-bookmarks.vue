@@ -39,7 +39,7 @@
     <div ref="myRef" class="text-center">
       <h4>
         <b>
-          <u>My Announcements</u>
+          <u>My Bookmarks</u> <i class="uil uil-bookmark"></i>
         </b>
       </h4>
     </div>
@@ -131,51 +131,14 @@
                         <b class="mdi mdi-lock-question text-primary"></b>
                         <span class="text-muted">activation :</span>
 
-                        <b-form-checkbox
-                          @change="activateAnnouncement(data)"
-                          class="float-right"
-                          v-model="data.user_status"
-                          switch
-                          size="sm"
-                        >
-                          <b v-if="data.user_status">
-                            <b-badge variant="success">Activated</b-badge>
-                          </b>
-                          <b v-else>
-                            <b-badge variant="danger">De Activated</b-badge>
-                          </b>
-                        </b-form-checkbox>
-                      </li>
-                      <li>
-                        <div class="d-flex justify-content-between">
-                          <span class="text-muted">Matchings Email Notification</span>
-                          <br />
-                          <b-form-checkbox
-                            @change="updateEmailMatching(data)"
-                            class="mt-1"
-                            v-model="data.matching_email"
-                            switch
-                            size="sm"
-                          >
-                            <b
-                              v-if="data.matching_email"
-                              class="mdi mdi-email-outline text-secondary"
-                            ></b>
-                            <b v-else class="mdi mdi-email-off-outline text-secondary"></b>
-                          </b-form-checkbox>
-                        </div>
+                        <b v-if="data.user_status">
+                          <b-badge variant="success">Activated</b-badge>
+                        </b>
+                        <b v-else>
+                          <b-badge variant="danger">De Activated</b-badge>
+                        </b>
                       </li>
                     </ul>
-                    <b-button
-                      class="mb-3"
-                      size="sm"
-                      @click="lostMatches(data.id)"
-                      block
-                      variant="soft-secondary"
-                    >
-                      View Matches
-                      <arrow-right-icon class="fea icon-sm"></arrow-right-icon>
-                    </b-button>
                     <b-button
                       size="sm"
                       @click="lostDetailsPage(data.id)"
@@ -291,51 +254,15 @@
                         <b class="mdi mdi-lock-question text-primary"></b>
                         <span class="text-muted">activation :</span>
 
-                        <b-form-checkbox
-                          @change="foundActivateAnnouncement(data)"
-                          class="float-right"
-                          v-model="data.user_status"
-                          switch
-                          size="sm"
-                        >
-                          <b v-if="data.user_status">
-                            <b-badge variant="success">Activated</b-badge>
-                          </b>
-                          <b v-else>
-                            <b-badge variant="danger">De Activated</b-badge>
-                          </b>
-                        </b-form-checkbox>
-                      </li>
-                      <li>
-                        <div class="d-flex justify-content-between">
-                          <span class="text-muted">Matchings Email Notification</span>
-                          <br />
-                          <b-form-checkbox
-                            @change="foundUpdateEmailMatching(data)"
-                            class="mt-1"
-                            v-model="data.matching_email"
-                            switch
-                            size="sm"
-                          >
-                            <b
-                              v-if="data.matching_email"
-                              class="mdi mdi-email-outline text-secondary"
-                            ></b>
-                            <b v-else class="mdi mdi-email-off-outline text-secondary"></b>
-                          </b-form-checkbox>
-                        </div>
+                        <b v-if="data.user_status">
+                          <b-badge variant="success">Activated</b-badge>
+                        </b>
+                        <b v-else>
+                          <b-badge variant="danger">De Activated</b-badge>
+                        </b>
                       </li>
                     </ul>
-                    <b-button
-                      class="mb-3"
-                      size="sm"
-                      @click="foundMatches(data.id)"
-                      block
-                      variant="soft-secondary"
-                    >
-                      View Matches
-                      <arrow-right-icon class="fea icon-sm"></arrow-right-icon>
-                    </b-button>
+
                     <b-button
                       size="sm"
                       @click="foundDetailsPage(data.id)"
@@ -449,75 +376,32 @@ export default {
     "v-select": vSelect
   },
   methods: {
-    getLost() {
-      /* this.loading=false */
-      axios
-        .get("user/my_lost?page=" + this.lostCurrentPage)
-        .then(resp => {
-          this.lostLastpage = resp.data.data.last_page;
-          if (this.lostLastpage > 1) {
-            this.lostPagination = true;
-          }
-          this.myLost = resp.data.data.lost.map(lost => {
-            return {
-              id: lost.id,
-              title: lost.title,
-              start_date: lost.start_date,
-              end_data: lost.end_data,
-              user_status: lost.user_status ? false : true,
-              status: lost.status,
-              matching_email: lost.matching_email
-            };
-          });
-          /*  this.loading = true */
-        })
-        .catch(err => {
-          console.log(err);
+    getBookmarks() {
+      axios.post("user/my_bookmarks").then(resp => {
+        this.myLost = resp.data.data.lost.map(lost => {
+          return {
+            id: lost.lost.id,
+            title: lost.lost.title,
+            start_date: lost.lost.start_date,
+            end_data: lost.lost.end_data,
+            user_status: lost.lost.user_status ? false : true,
+            status: lost.lost.status,
+            matching_email: lost.lost.matching_email
+          };
         });
-    },
-    lostLinkGen(pageNum) {
-      return;
-    },
-    lostChangePage(pageNum) {
-      this.lostCurrentPage = pageNum;
-      this.getLost();
-      const refElement = this.$refs.myRef;
-      refElement.scrollIntoView({ behavior: "smooth" });
-    },
-    getFound() {
-      /* this.loading=false */
-      axios
-        .get("user/my_found?page=" + this.foundCurrentPage)
-        .then(resp => {
-          this.foundLastpage = resp.data.data.last_page;
-          if (this.foundLastpage > 1) {
-            this.foundPagination = true;
-          }
-          this.myFound = resp.data.data.founds.map(lost => {
-            return {
-              id: lost.id,
-              title: lost.title,
-              start_date: lost.start_date,
-              end_data: lost.end_data,
-              user_status: lost.user_status,
-              status: lost.status,
-              matching_email: lost.matching_email
-            };
-          });
-          /*  this.loading = true */
-        })
-        .catch(err => {
-          console.log(err);
+
+        this.myFound = resp.data.data.founds.map(found => {
+          return {
+            id: found.found.id,
+            title: found.found.title,
+            start_date: found.found.start_date,
+            end_data: found.found.end_data,
+            user_status: found.found.user_status,
+            status: found.found.status,
+            matching_email: found.found.matching_email
+          };
         });
-    },
-    foundLinkGen(pageNum) {
-      return;
-    },
-    foundChangePage(pageNum) {
-      this.foundCurrentPage = pageNum;
-      this.getFound();
-      const refElement = this.$refs.myRef;
-      refElement.scrollIntoView();
+      });
     },
     sortMyLost() {
       if (this.lostSelected == null) {
@@ -713,8 +597,7 @@ export default {
     }
   },
   mounted() {
-    this.getLost();
-    this.getFound();
+    this.getBookmarks();
     setTimeout(() => {
       this.loading = false;
     }, 3000);

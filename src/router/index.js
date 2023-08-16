@@ -333,7 +333,16 @@ const routes = [
   {
     path: '/account-profile',
     name: 'account-profile',
-    component: () => import('../views/account-profile')
+    component: () => import('../views/account-profile'),
+    beforeEnter: (to, from, next) => {
+      if (user) {
+        next()
+      } else {
+        console.log(user)
+        next('/page-error')
+      }
+    }
+    
   },
   {
     path: '/account-members',
@@ -374,6 +383,19 @@ const routes = [
     path: '/my-lost-details',
     name: 'my-lost-details',
     component: () => import('../views/my-lost-details'),
+    beforeEnter: (to, from, next) => {
+      if (user) {
+        next()
+      } else {
+        console.log(user)
+        next('/page-error')
+      }
+    }
+  },
+  {
+    path: '/my-bookmarks',
+    name: 'my-bookmarks',
+    component: () => import('../views/my-bookmarks'),
     beforeEnter: (to, from, next) => {
       if (user) {
         next()
