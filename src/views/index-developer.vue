@@ -21,24 +21,32 @@
                 <a href="javascript:void(0)" @click="createAnnPage" class="btn btn-soft-primary mr-2 mb-2"
                   > Create Announcement</a
                 >
-                <a href="javascript:void(0)" class="btn btn-soft-success mr-2 mb-2"
+                <a  href="/search-announcement" class="btn btn-soft-success mr-2 mb-2"
                   >Search Announcement</a
                 >
                 <!-- <p>{{ahmed}}</p> -->
               </div>
-              <b-input-group class="mt-3">
-                <template #append>
-                  <b-button style="height:50px"  variant="outline-secondary"><b style="font-size: 25px;" class="mdi mdi-map-search-outline"></b></b-button>
-                </template>
-                <b-form-input style="height:50px" placeholder="Quick Search" ></b-form-input>
-            
-                <template #prepend>
-                  <b-dropdown right  style="height:50px" :text="keyWord" variant="secondary">
-                    <b-dropdown-item>{{lost}}</b-dropdown-item>
-                    <b-dropdown-item>{{found}}</b-dropdown-item>
-                  </b-dropdown>
-                </template>
-              </b-input-group>
+              <b-row class="mt-3">
+                  <b-col class="my-1" cols="12" lg="7" sm="12">
+                    <b-form-input v-model="searchTerm" placeholder="Quick Search..." size="lg"></b-form-input>
+                  </b-col>
+                  <b-col class="my-1" cols="12" lg="5" sm="12">
+                    <div class="d-flex w-100">
+                      <b-form-select size="lg" class="text-small" v-model="ann_type">
+                        <b-form-select-option
+                          disabled
+                          :value="null"
+                          class="text-primary"
+                        >Announcement Type</b-form-select-option>
+                        <b-form-select-option value="lost">Lost</b-form-select-option>
+                        <b-form-select-option value="found">Found</b-form-select-option>
+                      </b-form-select>
+                      <b-button size="sm" class="mx-2" @click="search()">
+                        <SearchIcon />
+                      </b-button>
+                    </div>
+                  </b-col>
+                </b-row>
             </div>
           </div>
           <!--end col-->
@@ -100,7 +108,7 @@
 </template>
 <script>
 const flag = 1
-import { ArrowUpIcon,ArrowRightIcon } from "vue-feather-icons";
+import { ArrowUpIcon,ArrowRightIcon ,SearchIcon, } from "vue-feather-icons";
 import Navbar from "@/components/navbar";
 import Switcher from "@/components/switcher";
 import Footer from "@/components/footer";
@@ -114,18 +122,20 @@ export default {
       lost:'Lost',
       found:'Found',
       keyWord:'Lost',
-      ahmed: ''
+      searchTerm: '',
+      ann_type: "lost",
+      search_value: "",
     }
   },
   created(){
-    this.ahmed = this.$route.query.id
   },
   components: {
     Navbar,
     Switcher,
     Footer,
     ArrowUpIcon,
-    ArrowRightIcon
+    ArrowRightIcon,
+    SearchIcon,
   },
   methods:{
     createAnnPage(){
@@ -136,7 +146,14 @@ export default {
       this.$router.push('/new-announcement')
      } 
      
-    }
+    },
+    search() {
+      // Navigate to the other page and pass the search term as a parameter
+      this.$router.push({
+        path: '/search-announcement',
+        query: { search_value: this.searchTerm , ann_type:this.ann_type  },
+      });
+    },
   },
   computed: {
     ...mapGetters({

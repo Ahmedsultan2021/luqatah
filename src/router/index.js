@@ -331,6 +331,21 @@ const routes = [
     component: () => import('../views/page-pricing')
   },
   {
+    path: '/search-announcement',
+    name: 'search-announcement',
+    query:'',
+    component: () => import('../views/search-announcement'),
+    // beforeEnter: (to, from, next) => {
+    //   if (user) {
+    //     next()
+    //   } else {
+    //     console.log(user)
+    //     next('/page-error')
+    //   }
+    // }
+    
+  },
+  {
     path: '/account-profile',
     name: 'account-profile',
     component: () => import('../views/account-profile'),

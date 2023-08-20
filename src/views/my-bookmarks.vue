@@ -17,7 +17,7 @@
                           class="btn btn-soft-primary mr-2 mb-4"
                         >Create Announcement</a>
                         <a
-                          href="javascript:void(0)"
+                          href="/search-announcement"
                           class="btn btn-soft-success mr-2 mb-4"
                         >Search Announcement</a>
                         <hr />
