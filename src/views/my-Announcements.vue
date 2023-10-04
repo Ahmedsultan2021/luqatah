@@ -574,11 +574,13 @@ export default {
       }
     },
     lostDetailsPage(id) {
-      localStorage.removeItem("lost_id");
-      localStorage.setItem("lost_id", id);
-      setTimeout(() => {
-        this.$router.push("/my-lost-details");
-      }, 1000);
+      this.$router.push({
+          name:"announcement",
+          query: {
+          No: id,
+          Type: 'myLost',
+        },
+        });
     },
     lostMatches(id) {
       localStorage.removeItem("lost_id");
@@ -596,11 +598,13 @@ export default {
     },
 
     foundDetailsPage(id) {
-      localStorage.removeItem("found_id");
-      localStorage.setItem("found_id", id);
-      setTimeout(() => {
-        this.$router.push("/my-found-details");
-      }, 1000);
+      this.$router.push({
+          name:"announcement",
+          query: {
+          No: id,
+          Type: 'myFound',
+        },
+        });
     },
 
     activateAnnouncement(data) {

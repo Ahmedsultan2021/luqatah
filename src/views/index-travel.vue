@@ -1,152 +1,148 @@
 <template>
-  <div class="py-5 px-5">
-    <b-container class="mt-1 py-5">
-      <b-row class="mt-5">
-        <b-col class="text-center">
-          <b-alert :show="showAlert"  variant="danger">{{error}}</b-alert>
-          <b-input-group class="mt-3">
-            <template #append>
-              <b-button v-if="loading" @click="getCurrentLocation" variant="outline-danger" squared>
-                <b  class="mdi mdi-map-marker"></b>
-              </b-button>
-              <b-button v-else @click="getCurrentLocation" variant="outline-danger" squared>
-                <b-spinner small ></b-spinner>
-              </b-button>
-            </template>
-            <b-form-input id="autocomplete" ref="autocomplete" v-model="address" size="lg" placeholder="enter your address"></b-form-input>
-          </b-input-group>
-          <b-button class="mt-2" variant="secondary">Go</b-button>
-        </b-col>
-      </b-row>
-    </b-container>
-    <center>
-      <div id="map" ref="map"></div>
-    </center>
-   
-   
+  <div class="py-5 px-5 my-5 mx-5">
+    <input ref="autocompleteInput" placeholder="Search for a location" />
+    <div style="width: 500px ; height:500px;" id="map" ref="map"></div>
   </div>
-  
 </template>
 
 <script>
-import axios from 'axios';
 export default {
   data() {
     return {
-    address:'',
-    error:'',
-    showAlert:false,
-    loading:true,
-    voice:true
+      map: null,
+      markers: [],
+      directionsService: null,
+      directionsRenderer: null
     };
   },
   mounted() {
-    var autocomplete = new google.maps.places.Autocomplete(
-      document.getElementById('autocomplete'),
-      {
-        bounds: new google.maps.LatLngBounds(
-          new google.maps.LatLng(31.20176, 29.91582)
-        ),
-      }
-    );
-
-    autocomplete.addListener("place_changed", () => {
-      var place = autocomplete.getPlace();
-
-       this.showLocationOnMap(
-        place.geometry.location.lat(),
-        place.geometry.location.lng()
-      ); 
-    });
+    this.loadGoogleMapScript();
   },
   methods: {
-    getCurrentLocation(){
-      this.loading = false
-      if(navigator.geolocation){
-        navigator.geolocation.getCurrentPosition(position =>{
-          this.getAddressFrom(position.coords.latitude,position.coords.longitude);
-          this.showLocationOnMap(position.coords.latitude,position.coords.longitude)
-          this.showAlert = false
-        },
-
-       
-        error =>{
-          console.log(error.message)
-          this.showAlert = true
-          this.error = error.message
-          this.loading = true
-        }
+    loadGoogleMapScript() {
+      const script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src =
+        "https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyCRMSE2oQeGa5vUdv7sSgAI4sTuTfvtAx8&callback=initMap";
+      document.head.appendChild(script);
+    },
+    initMap() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            this.createMap(position.coords.latitude, position.coords.longitude);
+          },
+          error => {
+            this.createMap(0, 0);
+          }
         );
-      }else{
-        console.log('your browser is not support geolocation API');
-        this.showAlert = true
-          this.error = error.message
-          this.loading = true 
+      } else {
+        this.createMap(0, 0);
       }
     },
-
-    getAddressFrom(lat, long){
-      axios.get("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + lat + ',' + long + '&key=AIzaSyAyIMu_yWFiJ-7Qgc8kGlEc8UYqM_X9Xpc')
-      .then((resp)=>{
-        if(resp.data.error_message){
-          console.log(resp.data.error_message);
-          this.showAlert = true
-          this.error = resp.data.error_message
-        }else{
-          this.showAlert = false
-          this.address = resp.data.results[0].formatted_address
-        }
-        this.loading = true
-      })
-      .catch((err)=>{
-        console.log(err.message)
-        this.showAlert = true
-          this.error = err.message
-      })
-    },
-    showLocationOnMap(lat,long){
-      // create A Map Object
-      var map = new google.maps.Map(this.$refs["map"], {
-        zoom: 15,
-        center: new google.maps.LatLng(lat, long),
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
+    createMap(lat, lng) {
+      this.map = new google.maps.Map(this.$refs.map, {
+        center: { lat, lng },
+        zoom: 10,
+        streetViewControl: false,
+        draggableCursor: "default",
+        mapTypeControl: true
       });
 
-      // Add Marker
-      new google.maps.Marker({
-        position : new google.maps.LatLng(lat,long),
-        map : map
-      })
+      this.initAutocomplete();
+      this.initDirections();
+    },
+    initAutocomplete() {
+      const input = this.$refs.autocompleteInput;
+      const autocomplete = new google.maps.places.Autocomplete(input);
+      autocomplete.bindTo("bounds", this.map);
+      autocomplete.setFields(["place_id", "geometry", "name"]);
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry) return;
+
+        const marker = this.createMarker(place.geometry.location, place.name);
+        this.markers.push(marker);
+        this.updateMarkerLabels();
+        this.map.setCenter(place.geometry.location);
+
+        if (this.markers.length === 1) {
+          this.createBuffer();
+        }
+        if (this.markers.length > 1) {
+          this.calculateDirections();
+        }
+      });
+    },
+    createMarker(position, name) {
+      const marker = new google.maps.Marker({
+        position,
+        map: this.map,
+        draggable: true,
+        label: "",
+        title: name,
+        icon: {
+          url: "/images/marker.png",
+          labelOrigin: new google.maps.Point(15, 15)
+        }
+      });
+
+      marker.addListener("dragend", () => {
+        const newLatLng = {
+          lat: marker.getPosition().lat(),
+          lng: marker.getPosition().lng()
+        };
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: newLatLng }, (results, status) => {
+          if (status === "OK" && results[0]) {
+            const placeName = results[0].formatted_address;
+            this.updateMarker(this.markers.indexOf(marker), {
+              ...newLatLng,
+              name: placeName
+            });
+            this.updateMarkerLabels();
+            if (this.markers.length > 1) {
+              this.calculateDirections();
+            }
+          }
+        });
+      });
+
+      return marker;
+    },
+    updateMarker(index, updatedMarker) {
+      this.markers[index] = {
+        ...this.markers[index],
+        ...updatedMarker
+      };
+    },
+    updateMarkerLabels() {
+      this.markers.forEach((marker, index) => {
+        marker.setLabel({
+          text: (index + 1).toString(),
+          color: "black",
+          fontSize: "12px",
+          fontWeight: "bold"
+        });
+      });
+    },
+    initDirections() {
+      this.directionsService = new google.maps.DirectionsService();
+      this.directionsRenderer = new google.maps.DirectionsRenderer({
+        map: this.map,
+        suppressMarkers: true
+      });
+    },
+    calculateDirections() {
+      // Implement your directions calculation here
+    },
+    createBuffer() {
+      // Implement your buffer creation logic here
     }
   },
-  
+  created() {
+    window.initMap = this.initMap;
+  }
 };
 </script>
-
-<style >
-  .pac-icon{
-    display: none;
-  }
-  
-  .pac-item{
-    padding: 10px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-
-  .pac-item:hover{
-    background-color: #ececec;
-  }
-  
-  .pac-item-query{
-    font-size: 16px;
-    color:#202842;
-    font-weight: 900;
-
-  }
-  #map{
-    width: 700px;
-    height: 700px;
-    
-  }
-</style>

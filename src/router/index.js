@@ -395,9 +395,10 @@ const routes = [
     component: () => import('../views/shop-grids')
   },
   {
-    path: '/my-lost-details',
-    name: 'my-lost-details',
-    component: () => import('../views/my-lost-details'),
+    path: '/announcement',
+    name: 'announcement',
+    component: () => import('../views/announcement'),
+    props: true,
     beforeEnter: (to, from, next) => {
       if (user) {
         next()
