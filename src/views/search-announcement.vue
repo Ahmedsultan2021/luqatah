@@ -362,6 +362,16 @@ export default {
       resultCardElement.scrollIntoView({ behavior: 'smooth' });
     },
 
+    lostDetailsPage(id) {
+      this.$router.push({
+          name:"announcement",
+          query: {
+          No: id,
+          Type: this.ann_type,
+        },
+        });
+    },
+
     get_categories(){
        // get categories
         axios.get("user/category/get").then(resp => {

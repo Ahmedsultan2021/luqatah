@@ -63,7 +63,7 @@
             <div class="sidebar sticky-bar p-4 rounded shadow">
               <div class="widget">
                 <!-- general data -->
-                <b-card class="my-2">
+                <b-card class="my-3">
                   <b-card-title>
                     <div class="d-flex justify-content-between" v-if="currentUser.id == announcement.user.id">
                       <p></p>
@@ -147,10 +147,10 @@
                   </b-row>
                 </b-card>
 
-                  <!-- general data -->
-                  <b-card class="my-2">
+                  <!-- items data -->
+                  <b-card class="my-3">
                   <b-card-title>
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between"  v-if="currentUser.id == announcement.user.id">
                       <p></p>
                       <b-button v-if="isDisabled" @click="isDisabled =!isDisabled" variant="link" class="text-secondary">
                         <Edit2Icon/> Edit
@@ -214,7 +214,7 @@
                       </b-form-group>
                      </div>
                      <b-form-group
-                     v-if="item.additional_data.length > 0"
+                      v-if="item.additional_data.length > 0"
                         label-cols-lg="3"
                         label-size="md"
                         label-class="text-secondary pt-0"
@@ -252,17 +252,111 @@
                       </b-form-group>
                     
                      </div>
-                     <hr>
+                     <b-container fluid class="p-4 bg-light" v-if="item.images.length">
+                      <b-row>
+                        <b-col class="my-1" cols="12" lg="4" md="6" 
+                          v-for="(image, imageIndex) in item.images" :key="imageIndex"
+                        >
+                          <b-img thumbnail fluid style="height:130px" :src="image.image" alt="Image 1"></b-img>
+                         
+                        </b-col>
+                      </b-row>
+                    </b-container>
+<hr>
                     </div>
                   </b-form-group>
+                </b-card>
+
+                  <!-- contact details -->
+                <b-card class="my-3">
+                  <b-card-title>
+                    <div class="d-flex justify-content-between"  v-if="currentUser.id == announcement.user.id">
+                      <p></p>
+                      <b-button v-if="isDisabled" @click="isDisabled =!isDisabled" variant="link" class="text-secondary">
+                        <Edit2Icon/> Edit
+                      </b-button>
+                      <b-button v-else @click="get_sengle_announcement($route.query.No)" variant="link" class="text-secondary">
+                       <RefreshCcwIcon/>  Reset
+                      </b-button>
+                    </div>
+                  </b-card-title>
                   <b-form-group
                     label-cols-lg="3"
+                    label="Contact Detail"
                     label-size="lg"
                     label-class="font-weight-bold pt-0"
                     class="mb-0"
                   >
+                  <div v-for="(contact, contactIndex) in announcement.contact_details" :key="contactIndex">
+                    
+                    <b-form-group
+                      label="Phone:"
+                      label-for="nested-street"
+                      label-cols-sm="3"
+                      label-align-sm="right"
+                      v-if="contact.phone"
+                    >
+                      <b-form-input v-model="contact.phone" style="font-weight: bold; font-size:17px" autocomplete="off" class="text-center" disabled  readonly id="nested-street"></b-form-input>
+                    </b-form-group>
+                    <b-form-group
+                      label="Email:"
+                      label-for="nested-street"
+                      label-cols-sm="3"
+                      label-align-sm="right"
+                      v-if="contact.email"
+                    >
+                      <b-form-input v-model="contact.email" style="font-weight: bold; font-size:17px" autocomplete="off" class="text-center" disabled  readonly id="nested-street"></b-form-input>
+                    </b-form-group>
+                    <b-form-group
+                      label="Contact Person:"
+                      label-for="nested-street"
+                      label-cols-sm="3"
+                      label-align-sm="right"
+                      v-if="contact.contact_person"
+                    >
+                      <b-form-input v-model="contact.contact_person" style="font-weight: bold; font-size:17px" autocomplete="off" class="text-center" disabled  readonly id="nested-street"></b-form-input>
+                    </b-form-group>
+                    <b-form-group
+                      label="Whatsapp:"
+                      label-for="nested-street"
+                      label-cols-sm="3"
+                      label-align-sm="right"
+                      v-if="contact.whatsapp"
+                    >
+                      <b-form-input v-model="contact.whatsapp" style="font-weight: bold; font-size:17px" autocomplete="off" class="text-center" disabled  readonly id="nested-street"></b-form-input>
+                    </b-form-group>
+                    <b-form-group
+                      label="Facebook:"
+                      label-for="nested-street"
+                      label-cols-sm="3"
+                      label-align-sm="right"
+                      v-if="contact.facebook"
+                    >
+                      <b-form-input v-model="contact.facebook" style="font-weight: bold; font-size:17px" autocomplete="off" class="text-center" disabled  readonly id="nested-street"></b-form-input>
+                    </b-form-group>
+                    <b-form-group
+                      label="Department:"
+                      label-for="nested-street"
+                      label-cols-sm="3"
+                      label-align-sm="right"
+                      v-if="contact.department"
+                    >
+                      <b-form-input v-model="contact.department" style="font-weight: bold; font-size:17px" autocomplete="off" class="text-center" disabled  readonly id="nested-street"></b-form-input>
+                    </b-form-group>
+                      <b-form-group
+                        label="Organization:"
+                        label-for="nested-street"
+                        label-cols-sm="3"
+                        label-align-sm="right"
+                        v-if="contact.organization"
+                      >
+                        <b-form-input v-model="contact.organization" style="font-weight: bold; font-size:17px" autocomplete="off" class="text-center" disabled  readonly id="nested-street"></b-form-input>
+                      </b-form-group>
+                  </div>
+                 
                   </b-form-group>
                 </b-card>
+                
               </div>
             </div>
           </div>
