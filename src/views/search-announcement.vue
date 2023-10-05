@@ -26,13 +26,17 @@
                     <div class="text-center mt-3">
                       <div>
                         <b-button-group>
-                          <b-button class="mx-1" @click="quick = true">
+                          <b-button class="mx-1" @click="quick = true , results = '' ,by_id= false , result_card = false , ann_type = null" >
                             Quick search
                             <SearchIcon />
                           </b-button>
-                          <b-button class="mx-1"   @click="quick = false">
+                          <b-button class="mx-1"   @click="quick = false ,by_id= false , results = '' , result_card = false , ann_type = null">
                             Advanced search
                             <MapPinIcon />
+                          </b-button>
+                          <b-button class="mx-1"   @click="quick = false , by_id= true , results = '' , result_card = false">
+                            By Announcement No
+                            #
                           </b-button>
                         </b-button-group>
                       </div>
@@ -68,7 +72,40 @@
                         <b-form-select-option value="lost">Lost</b-form-select-option>
                         <b-form-select-option value="found">Found</b-form-select-option>
                       </b-form-select>
-                      <b-button size="sm" class="mx-2" @click="quick_search()">
+                      <b-button size="sm" 
+                        class="mx-2"
+                        :disabled="!search_value || !ann_type" 
+                        @click="quick_search()">
+                        <SearchIcon />
+                      </b-button>
+                    </div>
+                  </b-col>
+                </b-row>
+              </div>
+              <div class="widget" v-else-if="by_id">
+                <h5 class="widget-title">Find Announcement</h5>
+                <b-row>
+                  <b-col class="my-1" cols="12" md="7" sm="12">
+                    <b-form-input v-model="id_value" placeholder="Announcement No #" size="lg"
+                        type="text"  
+                        @input="sanitizeInput"
+                    ></b-form-input>
+                  </b-col>
+                  <b-col class="my-1" cols="12" md="5" sm="12">
+                    <div class="d-flex w-100">
+                      <b-form-select size="lg" class="text-small" v-model="ann_type">
+                        <b-form-select-option
+                          disabled
+                          :value="null"
+                          class="text-primary"
+                        >Announcement Type</b-form-select-option>
+                        <b-form-select-option value="lost">Lost</b-form-select-option>
+                        <b-form-select-option value="found">Found</b-form-select-option>
+                      </b-form-select>
+                      <b-button size="sm" 
+                        class="mx-2"
+                        :disabled="!id_value || !ann_type" 
+                        @click="search_by_id  ()">
                         <SearchIcon />
                       </b-button>
                     </div>
@@ -80,13 +117,13 @@
                 <hr>
                 <b-row>
                   <b-col cols="12" lg="12" md="12" sm="12">
-                    <h6 class="widget-title text-danger">*Required Data</h6>
+                    <h6 class="widget-title"><u>Required Data</u></h6>
                   </b-col>
                 </b-row>
                <b-row class="mt-2">
-                <b-col cols="12" lg="4" md="6" sm="12">
+                <b-col cols="12" lg="4" md="4" sm="12">
                   <b-form-group label="select type">
-                    <b-form-select class="text-small" v-model="ann_type">
+                    <b-form-select class="text-small" v-model="ann_type" label="ahmed">
                         <b-form-select-option
                           disabled
                           :value="null"
@@ -97,7 +134,7 @@
                       </b-form-select>
                  </b-form-group>
                 </b-col>
-                <b-col cols="12" lg="4" md="6" sm="12">
+                <b-col cols="12" lg="4" md="4" sm="12">
                  <b-form-group label="select category">
                   <b-form-select 
                     v-model="category" 
@@ -108,13 +145,13 @@
                   </b-form-select>
                  </b-form-group>
                 </b-col>
-                <b-col cols="12" lg="4" md="6" sm="12">
+                <b-col cols="12" lg="4" md="4" sm="12">
                  <b-form-group label="select subcategory" v-if="category">
                   <b-form-select v-model="sub_category" :options="subcategories" class="mb-3">
                   </b-form-select>
                  </b-form-group>
                 </b-col>
-                <b-col cols="12" lg="4" md="6" sm="12">
+                <b-col cols="12" lg="4" md="4" sm="12">
                   <b-form-group label="select date">
                     <b-form-input type="date" v-model="advanced_data.date"></b-form-input>
                  </b-form-group>
@@ -123,32 +160,34 @@
                <hr>
                 <b-row>
                   <b-col cols="12" lg="12" md="12" sm="12">
-                    <h6 class="widget-title">Additional Data</h6>
+                    <h6 class="widget-title"><u>Additional Data</u></h6>
                   </b-col>
                 </b-row>
                <b-row class="mt-2">
-                <b-col cols="12" lg="4" md="6" sm="12">
+                <b-col cols="12" lg="4" md="4" sm="12">
                   <b-form-group label="Latin name">
                     <b-form-input  v-model="advanced_data.name_lt"></b-form-input>
                  </b-form-group>
                 </b-col>
-                <b-col cols="12" lg="4" md="6" sm="12">
+                <b-col cols="12" lg="4" md="4" sm="12">
                   <b-form-group label="Arabic name">
                     <b-form-input  v-model="advanced_data.name_ar"></b-form-input>
                  </b-form-group>
                 </b-col>
-                <b-col cols="12" lg="4" md="6" sm="12">
+                <b-col cols="12" lg="4" md="4" sm="12">
                  <b-form-group label="model" >
                   <b-form-select v-model="advanced_data.model" :options="models" class="mb-3">
                   </b-form-select>
                  </b-form-group>
                 </b-col>
                
-                <b-col cols="12" lg="4" md="6" sm="12"></b-col>
+                <b-col cols="12" lg="4" md="4" sm="12"></b-col>
                </b-row>
                <b-row class="justify-content-center">
                 <b-col cols="6">
-                  <b-button @click="advanced_search" block>Search <SearchIcon /></b-button>
+                  <b-button @click="advanced_search" block
+                    :disabled="!this.category || !this.sub_category || !this.advanced_data.date"
+                  >Search <SearchIcon /></b-button>
                 </b-col>
               </b-row>
               </div>
@@ -291,7 +330,7 @@ import axios from "../axios.config";
 export default {
   data() {
     return {
-      ann_type: "lost",
+      ann_type: null,
       quick: true,
       advanced: false,
       search_value: "",
@@ -311,7 +350,9 @@ export default {
       moedels:[],
       loading: false,
       results:[],
-      result_card:false
+      result_card:false,
+      by_id:false,
+      id_value:null
     };
   },
   validations: {
@@ -404,7 +445,10 @@ export default {
             );
           });
     },
-
+    sanitizeInput() {
+      // Remove non-numeric characters from input
+      this.id_value = this.id_value.replace(/\D/g, '');
+    },
 
     quick_search() {
       this.advanced_data = {
@@ -419,10 +463,10 @@ export default {
       this.category = null
       this.sub_category = null
       this.subcategories = ''
+     if(this.ann_type != null){
       this.loading = true
       this.result_card = true
       const url = this.ann_type === 'lost' ? 'user/lost/search' : 'user/found/search';
-     
       axios.post(url , {search: this.search_value})
       .then(resp => {
         if(this.ann_type === 'lost'){
@@ -457,22 +501,36 @@ export default {
         console.log(err)
         this.loading = false
       })
+     }else{
+      Swal.fire({
+            title: "Choose announcement type",
+            icon: "warning",
+            confirmButtonColor: "#202842"
+          });
+     }
      
     },
 
     advanced_search() {
       this.loading = true
       this.result_card = true
-
       this.search_value = null
-
       const selectedSubCategory = this.subcategories.find(cat => cat.value === this.sub_category);
       if (selectedSubCategory) {
         this.advanced_data.sub_category = selectedSubCategory.text;
       }
-
       const url = this.ann_type === 'lost' ? 'user/lost/advan_search' : 'user/found/advan_search';
-     
+      // this.$router.replace({ query: {
+      //       ann_type : this.ann_type , 
+      //       category:this.advanced_data.category,
+      //       sub_category:this.advanced_data.sub_category,
+      //       date:this.advanced_data.date,
+      //       name_lt:this.advanced_data.name_lt,
+      //       name_ar:this.advanced_data.name_ar,
+      //       number:this.advanced_data.number,
+      //       model:this.advanced_data.model,
+      //     }   
+      //   });
       axios.post(url ,this.advanced_data)
       .then(resp => {
         if(this.ann_type === 'lost'){
@@ -516,6 +574,10 @@ export default {
     this.ann_type = this.$route.query.ann_type
     this.quick_search()
    };
+  //  if (this.$route.query.category) {
+  //     this.ann_type = this.$route.query.ann_type
+  //     this.advanced_search()
+  //  }
 
    this.get_categories();
 

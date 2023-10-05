@@ -8,7 +8,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/index-developer.vue'),
+    component: () => import('../views/home.vue'),
   },
   {
     path: '*',
@@ -223,7 +223,7 @@ const routes = [
   {
     path: '/Home',
     name: 'developer',
-    component: () => import('../views/index-developer')
+    component: () => import('../views/home')
   },
   {
     path: '/index-seo-agency',

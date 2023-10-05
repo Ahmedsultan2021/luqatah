@@ -137,37 +137,37 @@
                 <b style="color: #202842">Date From</b>
                 <div v-if="step_one.end_data">
                   <b-form-datepicker
-                  id="startDate"
-                  aria-describedby="startDate startDate-feedback"
-                  today-button
-                  reset-button
-                  :max="step_one.end_data"
-                  :state="startDateReq"
-                  v-model="step_one.start_date"
-                  class="text-three"
-                  placeholder="From date"
-                  type="date"
-                ></b-form-datepicker>
-                <b-form-invalid-feedback id="startDate-feedback">The start date is required</b-form-invalid-feedback>
+                    id="startDate"
+                    aria-describedby="startDate startDate-feedback"
+                    today-button
+                    reset-button
+                    :max="step_one.end_data"
+                    :state="startDateReq"
+                    v-model="step_one.start_date"
+                    class="text-three"
+                    placeholder="From date"
+                    type="date"
+                  ></b-form-datepicker>
+                  <b-form-invalid-feedback id="startDate-feedback">The start date is required</b-form-invalid-feedback>
                 </div>
                 <div v-else>
                   <b-form-datepicker
-                  id="startDate"
-                  aria-describedby="startDate startDate-feedback"
-                  today-button
-                  reset-button
-                  :max="maxDate"
-                  :state="startDateReq"
-                  v-model="step_one.start_date"
-                  class="text-three"
-                  placeholder="From date"
-                  type="date"
-                ></b-form-datepicker>
-                <b-form-invalid-feedback id="startDate-feedback">The start date is required</b-form-invalid-feedback>
+                    id="startDate"
+                    aria-describedby="startDate startDate-feedback"
+                    today-button
+                    reset-button
+                    :max="maxDate"
+                    :state="startDateReq"
+                    v-model="step_one.start_date"
+                    class="text-three"
+                    placeholder="From date"
+                    type="date"
+                  ></b-form-datepicker>
+                  <b-form-invalid-feedback id="startDate-feedback">The start date is required</b-form-invalid-feedback>
                 </div>
                 <br />
                 <b style="color: #202842">Date To</b>
-                <div  v-if="step_one.start_date">
+                <div v-if="step_one.start_date">
                   <b-form-datepicker
                     id="endDate"
                     aria-describedby="endDate endDate-feedback"
@@ -184,7 +184,7 @@
                     id="endDate-feedback"
                   >The end date should be a day after the start date</b-form-invalid-feedback>
                 </div>
-                <div  v-else>
+                <div v-else>
                   <b-form-datepicker
                     id="endDate"
                     aria-describedby="endDate endDate-feedback"
@@ -201,7 +201,6 @@
                     id="endDate-feedback"
                   >The end date should be a day after the start date</b-form-invalid-feedback>
                 </div>
-
               </b-form-group>
               <hr />
               <b-form-group
@@ -217,55 +216,87 @@
                 <template v-slot:label>
                   <h5>Location</h5>
                 </template>
-                </b-form-group>
+              </b-form-group>
               <b-container fluid>
                 <b-row>
-                    <b-col sm="8">
-                      <input ref="autocompleteInput"   placeholder="search for location" class="form-control mb-2" />
-                      <div id="map-container">
-                            <div id="floating-panel">
-                              <b>Travel Mode: </b>
-                              <select id="mode" @change="calculateDirections">  
-                                <option value="DRIVING">Driving</option>
-                                <option value="WALKING">Walking</option>
-                                <!-- <option value="BICYCLING">Bicycling</option>
-                                <option value="TRANSIT">Transit</option> -->
-                              </select>
+                  <b-col sm="8">
+                    <input
+                      ref="autocompleteInput"
+                      placeholder="search for location"
+                      class="form-control mb-2"
+                    />
+                    <div id="map-container">
+                      <div id="floating-panel">
+                        <b>Travel Mode:</b>
+                        <select id="mode" @change="calculateDirections">
+                          <option value="DRIVING">Driving</option>
+                          <option value="WALKING">Walking</option>
+                          <!-- <option value="BICYCLING">Bicycling</option>
+                          <option value="TRANSIT">Transit</option>-->
+                        </select>
+                      </div>
+                      <div id="map"></div>
+                    </div>
+                    <input
+                      v-if="markers.length > 0"
+                      id="range"
+                      class="form-control"
+                      @change="createBuffer"
+                      type="range"
+                      min="0"
+                      max="101"
+                      step="1"
+                      v-model="bufferRadius"
+                    />
+                    <b style="font-size: 14px;" v-if="markers.length > 0">
+                      -
+                      <b v-if="bufferRadius > 100">Match finding announcements everywhere</b>
+                      <b
+                        v-else
+                      >Limit matching to specified location(s) within an area of {{bufferRadius}} Km</b>
+                    </b>
+                  </b-col>
+                  <b-col sm="4">
+                    <div
+                      v-if="markers[0]"
+                      style="height: 500px; overflow-y: scroll ; border-bottom: 1px dashed darkgray; "
+                    >
+                      <div class="text-right">
+                        <b-button variant="light" squared @click="resetMap()">Reset Map</b-button>
+                      </div>
+                      <b-list-group
+                        class="px-1"
+                        v-for="(marker, index) in markers"
+                        :key="index"
+                        @mouseover="animateMarker(index)"
+                        @click="scrollToMap"
+                        @mouseout="stopAnimation(index)"
+                      >
+                        <b-list-group-item class="mb-1 hover">
+                          <div class="d-flex justify-content-between mb-2">
+                            <div class="text-left pt-1">
+                              <img src="images/placeholder1.png" width="20" alt />
+                              <b class="text-danger">Point {{index+1}}</b>
                             </div>
-                            <div id="map"></div>
+                            <div class="text-left">
+                              <b-button
+                                pill
+                                variant="secondary"
+                                @click="removeMarker(index)"
+                                size="sm"
+                              >X</b-button>
+                            </div>
                           </div>
-                          <input v-if="markers.length > 0" id="range" class="form-control" @change="createBuffer" type="range" min="0" max="101" step="1" v-model="bufferRadius">
-                          <b style="font-size: 14px;" v-if="markers.length > 0">- 
-                            <b v-if="bufferRadius > 100">Match finding announcements everywhere</b>
-                             <b v-else>Limit matching to specified location(s) within an area of {{bufferRadius}} Km</b>
-                          </b>
-                          
-                    </b-col>
-                    <b-col sm="4">
-                      <div  v-if="markers[0]" style="height: 500px; overflow-y: scroll ; border-bottom: 1px dashed darkgray; ">  
-                        <div class="text-right">
-                          <b-button variant="light" squared   @click="resetMap()">Reset Map</b-button>
-                        </div>
-                          <b-list-group class="px-1"  v-for="(marker, index) in markers" :key="index" @mouseover="animateMarker(index)" @click="scrollToMap" @mouseout="stopAnimation(index)">
-                                <b-list-group-item   class="mb-1 hover" >
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <div class="text-left pt-1">
-                                          <img src="images/placeholder1.png" width="20" alt="">
-                                            <b class="text-danger " >Point {{index+1}}</b>  
-                                        </div>
-                                         <div class="text-left">
-                                            <b-button pill variant="secondary" @click="removeMarker(index)" size="sm">X</b-button>
-                                        </div> 
-                                    </div>
-                                    <p class="text-secondary" style="font-size: 13px;"><b>{{marker.name}}</b></p>
-                                    <!-- <p>( {{ marker.lat }},{{ marker.lng }} )</p> -->
-                                </b-list-group-item>    
-                              </b-list-group>
-                        </div>
-    
-                    </b-col>
+                          <p class="text-secondary" style="font-size: 13px;">
+                            <b>{{marker.name}}</b>
+                          </p>
+                          <!-- <p>( {{ marker.lat }},{{ marker.lng }} )</p> -->
+                        </b-list-group-item>
+                      </b-list-group>
+                    </div>
+                  </b-col>
                 </b-row>
-            </b-container>
+              </b-container>
             </tab-content>
             <!-- :beforeChange="validateStepTwo"  -->
             <tab-content title="Items Details" :beforeChange="validateStepTwo">
@@ -604,27 +635,36 @@
                           />
                         </div>
                         <div class="row">
-                          <div class="col-lg-4 col-md-6 col-12 mt-4 pt-2"
-                          v-for="(img, imgIndex) in item.images" :key="`image_${imgIndex}`">
-                            
-                            <b-card >
-                             <div class="text-center mb-2">
-                              <b-button
-                                @click="removePreview(itemIndex, imgIndex)"
-                                size="sm"
-                                variant="soft-danger"
+                          <div
+                            class="col-lg-4 col-md-6 col-12 mt-4 pt-2"
+                            v-for="(img, imgIndex) in item.images"
+                            :key="`image_${imgIndex}`"
+                          >
+                            <b-card>
+                              <div class="text-center mb-2">
+                                <b-button
+                                  @click="removePreview(itemIndex, imgIndex)"
+                                  size="sm"
+                                  variant="soft-danger"
+                                >
+                                  <b style="font-size: 10px">X</b>
+                                </b-button>
+                              </div>
+                              <div
+                                class="card border-0 work-container work-modern position-relative d-block overflow-hidden rounded"
                               >
-                                <b style="font-size: 10px">X</b>
-                              </b-button>
-                             </div>
-                              <div class="card border-0 work-container work-modern position-relative d-block overflow-hidden rounded">
                                 <div class="card-body p-0">
-                                  <img :src="img.src" class="img-fluid" alt="work-image" style="width:200px ; height:200px"/>
+                                  <img
+                                    :src="img.src"
+                                    class="img-fluid"
+                                    alt="work-image"
+                                    style="width:200px ; height:200px"
+                                  />
                                   <div class="overlay-work bg-dark"></div>
                                   <div class="icons text-center">
                                     <a
                                       href="javascript: void(0);"
-                                      @click="() => showImg(imgIndex)" 
+                                      @click="() => showImg(imgIndex)"
                                       class="text-primary work-icon bg-white d-inline-block rounded-pill mfp-image"
                                     >
                                       <camera-icon class="fea icon-sm"></camera-icon>
@@ -632,16 +672,21 @@
                                   </div>
                                 </div>
                               </div>
-                              <div class="content text-center" >
+                              <div class="content text-center">
                                 <h6 class="text-dark tag mb-0">Image Title</h6>
-                                <input v-model="img.title" type="text" placeholder="Image Title" class="form-control">
+                                <input
+                                  v-model="img.title"
+                                  type="text"
+                                  placeholder="Image Title"
+                                  class="form-control"
+                                />
                               </div>
                             </b-card>
-                          </div> 
+                          </div>
                           <!--end col-->
-                
+
                           <!--end col-->
-                           <vue-easy-lightbox
+                          <vue-easy-lightbox
                             :visible="lightBoxVisible"
                             :index="lightBoxIndex"
                             :imgs="item.images"
@@ -650,10 +695,10 @@
                           <!--end col-->
                         </div>
                         <div v-if="item.imgLoad">
-                          <b-spinner variant="secondary" small >
-                            
-                          </b-spinner>
-                          <b style="font-size: 12px"> <b class="mdi mdi-image"></b> Uploading Image...</b>
+                          <b-spinner variant="secondary" small></b-spinner>
+                          <b style="font-size: 12px">
+                            <b class="mdi mdi-image"></b> Uploading Image...
+                          </b>
                         </div>
                       </b-form-group>
                     </div>
@@ -927,7 +972,7 @@
                 <b-form-textarea size="lg" rows="8" v-model="step_one.additional_information"></b-form-textarea>
               </b-form-group>
             </tab-content>
-            <tab-content  title="Confirmation" ref="tab2" >
+            <tab-content title="Confirmation" ref="tab2">
               <b-card bg-variant="soft-light" text-variant="white" no-body>
                 <b-card bg-variant="soft-dark" text-variant="white" no-body>
                   <b-container fluid>
@@ -949,21 +994,21 @@
                     <b-container class="mt-3">
                       <b-row class="mb-2">
                         <b-col class="text-dark" sm="6">
-                          <b>Type:</b>
+                          <b>Title:</b>
                         </b-col>
                         <b-col class="text-primary" sm="6">
                           <p>
-                            <b >{{ step_one.announcement_type }}</b> 
+                            <b>{{ step_one.title }}</b>
                           </p>
                         </b-col>
                       </b-row>
                       <b-row class="mb-2">
                         <b-col class="text-dark" sm="6">
-                          <b>Title:</b>
+                          <b>Type:</b>
                         </b-col>
                         <b-col class="text-primary" sm="6">
                           <p>
-                            <b >{{ step_one.title }}</b> 
+                            <b>{{ step_one.announcement_type }}</b>
                           </p>
                         </b-col>
                       </b-row>
@@ -973,7 +1018,7 @@
                         </b-col>
                         <b-col class="text-primary" sm="6">
                           <p>
-                            <b >{{ step_one.start_date }}</b>
+                            <b>{{ step_one.start_date }}</b>
                           </p>
                         </b-col>
                       </b-row>
@@ -983,43 +1028,34 @@
                         </b-col>
                         <b-col class="text-primary" sm="6">
                           <p>
-                            <b >{{ step_one.end_data }}</b>
+                            <b>{{ step_one.end_data }}</b>
                           </p>
                         </b-col>
                       </b-row>
                     </b-container>
-                  </b-card>
-                </b-card>
-                <hr  />
-                <b-card  bg-variant="soft-dark" text-variant="white" no-body>
-                  <b-container fluid>
-                    <b-row>
-                      <b-col cols="7" class="mt-1 pt-2"> 
-                        <p style="font-size: 15px">
-                          <b>Location</b>
-                        </p>
-                      </b-col>
-                      <b-col cols="5" class="mt-1 py-1 text-right">
-                        <b-button @click="editStepOne" style="font-size: 14px" size="sm">
-                          Edit
-                          <i class="mdi mdi-pencil"></i>
-                        </b-button>
-                      </b-col>
-                    </b-row>
-                  </b-container>
-                  <b-card no-body>
-                    <b-container  v-if="markers.length > 0" class="mt-3">
+                    <b-container fluid>
+                      <b-row>
+                        <b-col cols="7" class="mt-1 pt-2">
+                          <p style="font-size: 15px">
+                            <b>Location</b>
+                          </p>
+                        </b-col>
+                      </b-row>
+                    </b-container>
+                    <b-container v-if="markers.length > 0" class="my-3">
                       <b-row>
                         <b-col>
                           <div id="map2" style="height: 500px; width: 100%;"></div>
                         </b-col>
                       </b-row>
                     </b-container>
-                    <b-container  v-else class="mt-3">
+                    <b-container v-else class="mt-3">
                       <b-row>
                         <b-col>
-                          <div >
-                            <h6 class="text-secondary"><b>No Locations Added</b></h6>
+                          <div>
+                            <h6 class="text-secondary">
+                              <b>No Locations Added</b>
+                            </h6>
                           </div>
                         </b-col>
                       </b-row>
@@ -1027,6 +1063,7 @@
                   </b-card>
                 </b-card>
                 <hr />
+
                 <b-card bg-variant="soft-dark" text-variant="white" no-body>
                   <b-container fluid>
                     <b-row>
@@ -1066,11 +1103,12 @@
                       </b-row>
                       <!-- <b-dd-divider /> -->
                       <br />
-                      <b-row class="mb-2"
+                      <b-row
+                        class="mb-2"
                         v-for="(category, categoryIndex) in item.categoryArray"
                         :key="`cat_${categoryIndex}`"
                       >
-                        <b-col class="text-dark " sm="6">
+                        <b-col class="text-dark" sm="6">
                           <b>Category ({{ categoryIndex + 1 }})</b>:
                         </b-col>
                         <b-col v-if="category.category != null" class="text-primary" sm="6">
@@ -1098,7 +1136,8 @@
                         </b-col>
                       </b-row>
                       <br />
-                      <b-row class="mb-4"
+                      <b-row
+                        class="mb-4"
                         v-for="(extra, extraIndex) in item.additionalArray"
                         :key="`extra_${extraIndex}`"
                       >
@@ -1146,15 +1185,24 @@
                       <br />
                     </b-container>
                     <div class="row p-2">
-                          <div class="col-lg-4 col-md-6 col-12 mt-4 pt-2"
-                          v-for="(img, imgIndex) in item.images" :key="`image_${imgIndex}`">
-                            
-                            <b-card >
-                              <div class="card border-0 work-container work-modern position-relative d-block overflow-hidden rounded">
-                                <div class="card-body p-0 text-center">
-                                  <img  :src="img.src" class="img-fluid" alt="work-image" style=" height:200px" />
-                                  <div class="overlay-work bg-dark"></div>
-                                  <!-- <div class="icons text-center">
+                      <div
+                        class="col-lg-4 col-md-6 col-12 mt-4 pt-2"
+                        v-for="(img, imgIndex) in item.images"
+                        :key="`image_${imgIndex}`"
+                      >
+                        <b-card>
+                          <div
+                            class="card border-0 work-container work-modern position-relative d-block overflow-hidden rounded"
+                          >
+                            <div class="card-body p-0 text-center">
+                              <img
+                                :src="img.src"
+                                class="img-fluid"
+                                alt="work-image"
+                                style=" height:200px"
+                              />
+                              <div class="overlay-work bg-dark"></div>
+                              <!-- <div class="icons text-center">
                                     <a
                                       href="javascript: void(0);"
                                       @click="() => showImg(imgIndex)" 
@@ -1162,25 +1210,33 @@
                                     >
                                       <camera-icon class="fea icon-sm"></camera-icon>
                                     </a>
-                                  </div> -->
-                                </div>
-                              </div>
-                              <div class="content text-center" >
-                                <input v-model="img.title" readonly type="text" placeholder="No Title Added" style="font-weight: bold; font-size:15px" autocomplete="off" class="form-control mt-2 text-center text-primary">
-                              </div>
-                            </b-card>
-                            <vue-easy-lightbox
-                            :visible="lightBoxVisible"
-                            :index="lightBoxIndex"
-                            :imgs="img.url"
-                            @hide="lightBoxVisible = false"
-                          ></vue-easy-lightbox>
-                          </div> 
-                          <!--end col-->
-                
-                          <!--end col-->
-                          <!--end col-->
-                        </div>
+                              </div>-->
+                            </div>
+                          </div>
+                          <div class="content text-center">
+                            <input
+                              v-model="img.title"
+                              readonly
+                              type="text"
+                              placeholder="No Title Added"
+                              style="font-weight: bold; font-size:15px"
+                              autocomplete="off"
+                              class="form-control mt-2 text-center text-primary"
+                            />
+                          </div>
+                        </b-card>
+                        <vue-easy-lightbox
+                          :visible="lightBoxVisible"
+                          :index="lightBoxIndex"
+                          :imgs="img.url"
+                          @hide="lightBoxVisible = false"
+                        ></vue-easy-lightbox>
+                      </div>
+                      <!--end col-->
+
+                      <!--end col-->
+                      <!--end col-->
+                    </div>
                   </b-card>
                 </b-card>
                 <hr />
@@ -1205,68 +1261,69 @@
                     <b-container class="mb-3">
                       <b-row
                         v-for="(contact, cIndex) in contact_details"
-                        :key="`contactos_${cIndex}`" class="mb-4"
+                        :key="`contactos_${cIndex}`"
+                        class="mb-4"
                       >
-                        <b-col v-if="contact.phone" class="text-dark " sm="6">
+                        <b-col v-if="contact.phone" class="text-dark" sm="6">
                           <b>Phone Number</b>:
                         </b-col>
-                        <b-col v-if="contact.phone" class="text-primary  " sm="12">
+                        <b-col v-if="contact.phone" class="text-primary" sm="12">
                           <p>
                             <b>{{ contact.phone }}</b>
                           </p>
                         </b-col>
-                        <b-col v-if="contact.email" class="text-dark " sm="6">
+                        <b-col v-if="contact.email" class="text-dark" sm="6">
                           <b>Email</b>:
                         </b-col>
-                        <b-col v-if="contact.email" class="text-primary  " sm="12">
+                        <b-col v-if="contact.email" class="text-primary" sm="12">
                           <p>
                             <b>{{ contact.email }}</b>
                           </p>
                         </b-col>
-                        <b-col v-if="contact.contact_person" class="text-dark " sm="6">
+                        <b-col v-if="contact.contact_person" class="text-dark" sm="6">
                           <b>Contact Person</b>:
                         </b-col>
-                        <b-col v-if="contact.contact_person" class="text-primary  " sm="12">
+                        <b-col v-if="contact.contact_person" class="text-primary" sm="12">
                           <p>
                             <b>{{ contact.contact_person }}</b>
                           </p>
                         </b-col>
-                        <b-col v-if="contact.organization" class="text-dark " sm="6">
+                        <b-col v-if="contact.organization" class="text-dark" sm="6">
                           <b>Organization</b>:
                         </b-col>
-                        <b-col v-if="contact.organization" class="text-primary  " sm="12">
+                        <b-col v-if="contact.organization" class="text-primary" sm="12">
                           <p>
                             <b>{{ contact.organization }}</b>
                           </p>
                         </b-col>
-                        <b-col v-if="contact.department" class="text-dark " sm="6">
+                        <b-col v-if="contact.department" class="text-dark" sm="6">
                           <b>Department</b>:
                         </b-col>
-                        <b-col v-if="contact.department" class="text-primary  " sm="12">
+                        <b-col v-if="contact.department" class="text-primary" sm="12">
                           <p>
                             <b>{{ contact.department }}</b>
                           </p>
                         </b-col>
-                        <b-col v-if="contact.whatsapp" class="text-dark " sm="6">
+                        <b-col v-if="contact.whatsapp" class="text-dark" sm="6">
                           <b>Whatsapp</b>:
                         </b-col>
-                        <b-col v-if="contact.whatsapp" class="text-primary  " sm="12">
+                        <b-col v-if="contact.whatsapp" class="text-primary" sm="12">
                           <p>
                             <b>{{ contact.whatsapp }}</b>
                           </p>
                         </b-col>
-                        <b-col v-if="contact.facebook" class="text-dark " sm="6">
+                        <b-col v-if="contact.facebook" class="text-dark" sm="6">
                           <b>Facebook</b>:
                         </b-col>
-                        <b-col v-if="contact.facebook" class="text-primary " sm="12">
+                        <b-col v-if="contact.facebook" class="text-primary" sm="12">
                           <p>
                             <b>{{ contact.facebook }}</b>
                           </p>
                         </b-col>
-                        <b-col v-if="contact.address" class="text-dark " sm="6">
+                        <b-col v-if="contact.address" class="text-dark" sm="6">
                           <b>Address</b>:
                         </b-col>
-                        <b-col v-if="contact.address" class="text-primary " sm="12">
+                        <b-col v-if="contact.address" class="text-primary" sm="12">
                           <p>
                             <b>{{ contact.address }}</b>
                           </p>
@@ -1312,7 +1369,9 @@
       </section>
       <b-modal hide-footer hide-header v-model="result" centered no-close-on-backdrop>
         <div v-if="isProcessing" class="text-center py-5">
-          <span class="loader"> <b class="mdi mdi-map-marker"></b></span>
+          <span class="loader">
+            <b class="mdi mdi-map-marker"></b>
+          </span>
           <h4 class="text-secondary">
             <b>Saving</b>
           </h4>
@@ -1321,7 +1380,9 @@
           <h1 style="font-size: 100px">
             <i class="mdi mdi-check-circle" style="color: green"></i>
           </h1>
-          <h5>The Announcements has been added successfully</h5>
+          <h4 class="mb-2">The Announcements has been added successfully</h4>
+          <h6>Your Announcement No is: #{{ new_id }}</h6>
+          <b-button class="m-1 text-primary" variant="text" @click="lostDetailsPage">View Details</b-button>
           <br />
           <div>
             <b-button class="m-1" variant="secondary" @click="myAnnPage">My Announcements</b-button>
@@ -1348,7 +1409,7 @@ import { initMap } from "@/utils/initMap";
 import axios from "../axios.config";
 import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
-import { ArrowUpIcon, ArrowRightIcon , CameraIcon} from "vue-feather-icons";
+import { ArrowUpIcon, ArrowRightIcon, CameraIcon } from "vue-feather-icons";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { helpers } from "gmap-vue";
@@ -1358,9 +1419,9 @@ import "vue2-dropzone/dist/vue2Dropzone.min.css";
 import { mapGetters, mapActions } from "vuex";
 import { swiper, swiperSlide } from "vue-awesome-swiper";
 import Swal from "sweetalert2";
-import SingleLightbox from "../components/SingleLightbox"
+import SingleLightbox from "../components/SingleLightbox";
 import VueEasyLightbox from "vue-easy-lightbox";
-import * as turf from '@turf/turf';
+import * as turf from "@turf/turf";
 export default {
   components: {
     Navbar,
@@ -1373,13 +1434,15 @@ export default {
     "new-announcement": newAnnouncement,
     swiper,
     swiperSlide,
-    "single-light-box":SingleLightbox,
-    VueEasyLightbox,
+    "single-light-box": SingleLightbox,
+    VueEasyLightbox
   },
   data() {
     return {
-      maxDate: new Date().toISOString().slice(0, 10), 
+      maxDate: new Date().toISOString().slice(0, 10),
       img: [{ image: "" }],
+      new_id: "",
+      new_type: "",
       acceptedimages: [],
       ImagePreview: "",
       isProcessing: true,
@@ -1427,9 +1490,9 @@ export default {
       flag: 0,
       stepThreeFlag: true,
       stepOneFlag: false,
-      mapCenter:{lat:0, lng:0},
-      mapZoom:3,
-      selectedTravelMode:'Driving',
+      mapCenter: { lat: 0, lng: 0 },
+      mapZoom: 3,
+      selectedTravelMode: "Driving",
 
       /* maps properties */
       markers: [],
@@ -1437,27 +1500,27 @@ export default {
       directionsService: null,
       directionsService2: null,
       directionsRenderer: null,
-      directionsRenderer2 :null,
+      directionsRenderer2: null,
       directionsCalculated: false, // Add new flag
       directionsCalculated2: false, // Add new flag
-      circle :null,
+      circle: null,
       directionsSteps: [],
       allPoints: [],
-      allWaysPoints:[],
+      allWaysPoints: [],
       bufferRadius: 1, // Add bufferRadius property
       buffer: "",
       map: "",
-      map2:"",
+      map2: "",
       allMarkers: [],
-      newPositions:'',
-      currentInfoWindow :'',
-      defaultLocation:{ lat: 31.229389862175648, lng: 29.959807012803527  },
+      newPositions: "",
+      currentInfoWindow: "",
+      defaultLocation: { lat: 31.229389862175648, lng: 29.959807012803527 },
       lightboximgs: [],
       lightBoxVisible: false,
       lightBoxIndex: 0, // default: 0,
-      line:'',
-      line2:'',
-      waypoints:'',
+      line: "",
+      line2: "",
+      waypoints: ""
     };
   },
   computed: {
@@ -1481,7 +1544,7 @@ export default {
     endDateReq() {
       if (this.step_one.start_date == null) {
         return null;
-      }else if(this.step_one.end_data == null){
+      } else if (this.step_one.end_data == null) {
         return null;
       } else {
         return this.step_one.end_data.length > 0 &&
@@ -1499,646 +1562,672 @@ export default {
       "https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyCRMSE2oQeGa5vUdv7sSgAI4sTuTfvtAx8&callback=initMap";
     document.head.appendChild(script);
     // Define initMap function in global scope
-    window.initMap = () =>{
-
-        // map1 (step One)
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) =>{
-              console.log(position)
-              const map = new google.maps.Map(document.getElementById("map"), {
-                center: {
-                  lat: position.coords.latitude,
-                  lng: position.coords.longitude,                 
-                },
-                zoom: 10,
-                streetViewControl: false, // disable street view control
-                draggableCursor: 'default', // change the draggable cursor to default
-                mapTypeControl: false, // enable map type control
+    window.initMap = () => {
+      // map1 (step One)
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            console.log(position);
+            const map = new google.maps.Map(document.getElementById("map"), {
+              center: {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+              },
+              zoom: 10,
+              streetViewControl: false, // disable street view control
+              draggableCursor: "default", // change the draggable cursor to default
+              mapTypeControl: false // enable map type control
+            });
+            this.map = map;
+            const markers = [];
+            this.markers = markers;
+            this.map.addListener("click", e => {
+              // Create a marker for clicked position
+              const marker = new google.maps.Marker({
+                position: e.latLng,
+                draggable: true, // make the marker draggable
+                map: this.map,
+                title: "name",
+                label: "",
+                icon: {
+                  url: "/images/marker.png",
+                  labelOrigin: new google.maps.Point(15, 15)
+                }
               });
-              this.map = map
-              const markers = [];
-              this.markers = markers;
-              this.map.addListener("click", (e)=>{
-         // Create a marker for clicked position
-         const marker = new google.maps.Marker({
-            position: e.latLng,
-            draggable: true, // make the marker draggable
-            map: this.map,
-            title: "name",
-            label:'',
-            icon: {
-                url:"/images/marker.png",
-                labelOrigin: new google.maps.Point(15,15)
-            },
-        });
-       
 
-         // Add marker position to markers array
-         const geocoder = new google.maps.Geocoder();
-         geocoder.geocode({ location: e.latLng }, (results, status) =>{
-            if (status === "OK"){
-                if (results[0]){
+              // Add marker position to markers array
+              const geocoder = new google.maps.Geocoder();
+              geocoder.geocode({ location: e.latLng }, (results, status) => {
+                if (status === "OK") {
+                  if (results[0]) {
                     const placeName = results[0].formatted_address;
-                    marker.setTitle(placeName)
+                    marker.setTitle(placeName);
                     // Add marker position and place name to markers array
                     markers.push({
-                        marker,
-                        lat: marker.getPosition().lat(),
-                        lng: marker.getPosition().lng(),
-                        name: placeName,
+                      marker,
+                      lat: marker.getPosition().lat(),
+                      lng: marker.getPosition().lng(),
+                      name: placeName
                     });
-                    this.markers = markers
-                    this.markers.forEach((marker,index)=>{
-                      marker.marker.setLabel({ text: (index + 1).toString(), color: "black" ,fontSize: "12px", fontWeight: "bold" })
-                    })
+                    this.markers = markers;
+                    this.markers.forEach((marker, index) => {
+                      marker.marker.setLabel({
+                        text: (index + 1).toString(),
+                        color: "black",
+                        fontSize: "12px",
+                        fontWeight: "bold"
+                      });
+                    });
                     this.map.setZoom(10);
                     this.map.setCenter(e.latLng);
-                    
-                    if(this.markers.length > 1){
-                        this.calculateDirections()
+
+                    if (this.markers.length > 1) {
+                      this.calculateDirections();
                     }
-                    if(this.markers.length >= 1){
-                        this.createBuffer()
+                    if (this.markers.length >= 1) {
+                      this.createBuffer();
                     }
 
                     // dragend marker
                     this.markers.forEach((marker, index) => {
-                       /*  marker.marker.setLabel((index+1).toString()); */
-                       /*  marker.marker.addListener('click', () => this.animateMarker(index)); */
-                        marker.marker.addListener('dragend', () => {
-                            const newLatLng = {
-                                lat: marker.marker.getPosition().lat(),
-                                lng: marker.marker.getPosition().lng(),
-                            };
-                            const geocoder = new google.maps.Geocoder();
-                            geocoder.geocode({ location: newLatLng }, (results, status) =>{
-                                if (status === "OK"){
-                                    if (results[0]){
-                                        const placeName = results[0].formatted_address;
-                                        newLatLng.name = placeName;
-                                        this.updateMarker(index, newLatLng);
-                                        if(this.markers.length>1){
-                                            this.calculateDirections()
-                                        }
-                                        if(this.markers.length >= 1){
-                                            this.createBuffer()
-                                        }
-                                    }
+                      /*  marker.marker.setLabel((index+1).toString()); */
+                      /*  marker.marker.addListener('click', () => this.animateMarker(index)); */
+                      marker.marker.addListener("dragend", () => {
+                        const newLatLng = {
+                          lat: marker.marker.getPosition().lat(),
+                          lng: marker.marker.getPosition().lng()
+                        };
+                        const geocoder = new google.maps.Geocoder();
+                        geocoder.geocode(
+                          { location: newLatLng },
+                          (results, status) => {
+                            if (status === "OK") {
+                              if (results[0]) {
+                                const placeName = results[0].formatted_address;
+                                newLatLng.name = placeName;
+                                this.updateMarker(index, newLatLng);
+                                if (this.markers.length > 1) {
+                                  this.calculateDirections();
                                 }
-                            });
-                        });
+                                if (this.markers.length >= 1) {
+                                  this.createBuffer();
+                                }
+                              }
+                            }
+                          }
+                        );
+                      });
                     });
 
-                     // add info window
+                    // add info window
                     // this.markers.forEach(markerObj => {
                     //     const marker = markerObj.marker;
                     //     const infoWindow = new google.maps.InfoWindow({
                     //         content: `<div><b>${markerObj.name}</b><br>( ${markerObj.lat} , ${markerObj.lng}</div>`
                     //     });
-                        
+
                     //     marker.addListener('click', () => {
                     //         infoWindow.open(map, marker);
                     //     });
                     // });
-                }
-                else {
+                  } else {
                     console.log("No results found");
+                  }
+                } else {
+                  console.log(`Geocoder failed due to: ${status}`);
                 }
-            }
-            else {
-                console.log(`Geocoder failed due to: ${status}`);
-            }
-         })
-
-      });
-        // Add click event listener to map
-    
-
-      // Create autocomplete search bar
-      const input = this.$refs.autocompleteInput;
-      const autocomplete = new google.maps.places.Autocomplete(input);
-
-      // Set the bounds to the map's viewport to ensure that autocomplete
-      // results are biased towards the visible area of the map.
-      autocomplete.bindTo("bounds", map);
-
-       // Specify just the place data fields that you need.
-       autocomplete.setFields(["place_id", "geometry", "name"]);
-
-        // Listen for the event fired when the user selects a prediction and retrieve
-      // more details for that place.
-      autocomplete.addListener("place_changed", () =>{
-
-        const place = autocomplete.getPlace();
-        if (!place.geometry){
-            return;
-        }
-        this.$refs.autocompleteInput.value = ''
-        this.$refs.autocompleteInput.placeholder = 'search another location'
-
-        // Add marker for selected place
-        const marker = new google.maps.Marker({
-          position: place.geometry.location,
-          map: this.map,
-          draggable: true, // make the marker draggable
-          label:'',
-          icon: {
-                url:"/images/marker.png",
-                labelOrigin: new google.maps.Point(15,15)
-            },
-        });
-
-         // Add marker position to markers array
-         markers.push({
-          marker,
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-          name:place.name
-        });
-
-        this.markers = markers
-        this.markers.forEach((marker,index)=>{
-            marker.marker.setLabel({ text: (index + 1).toString(), color: "black" ,fontSize: "12px", fontWeight: "bold" })
-          })
-        this.map.setZoom(10);
-        this.map.setCenter(place.geometry.location);
-        if(this.markers.length === 1){
-            this.createBuffer()
-        }
-        if(this.markers.length > 1){
-          this.calculateDirections() 
-        }
-
-        // dragend marker
-        this.markers.forEach((marker, index) => {
-            /* marker.marker.addListener('click', () => this.animateMarker(index)); */
-            marker.marker.addListener('dragend', () => {
-                const newLatLng = {
-                    lat: marker.marker.getPosition().lat(),
-                    lng: marker.marker.getPosition().lng(),
-                };
-                const geocoder = new google.maps.Geocoder();
-                geocoder.geocode({ location: newLatLng }, (results, status) =>{
-                    if (status === "OK"){
-                        if (results[0]){
-                            const placeName = results[0].formatted_address;
-                            newLatLng.name = placeName;
-                            this.updateMarker(index, newLatLng);
-                            if(this.markers.length>1){
-                                this.calculateDirections()
-                            }
-                            if(this.markers.length >= 1){
-                                this.createBuffer()
-                            }
-                        }
-                    }
-                });
-            });
-        });
-        
-        // add info window
-        // this.markers.forEach(markerObj => {
-        //     const marker = markerObj.marker;
-        //     const infoWindow = new google.maps.InfoWindow({
-        //         content: `<div><b>${markerObj.name}</b><br>( ${markerObj.lat} , ${markerObj.lng}</div>`
-        //     });
-            
-        //     marker.addListener('click', () => {
-        //         infoWindow.open(map, marker);
-        //     });
-        // });
-      })
-
-      // Initialize directionsService and directionsRenderer
-      this.directionsService = new google.maps.DirectionsService();
-        this.directionsRenderer = new google.maps.DirectionsRenderer({
-            map: this.map,
-            suppressMarkers: true // Set to true to suppress "A" and "B" markers
-        });
-            },
-            () =>{
-              console.log("Error: Your browser doesn't support geolocation.");
-          const map = new google.maps.Map(document.getElementById("map"), {
-                center:{
-                  lat: 0,
-                  lng: 0                 
-                },
-                zoom: 3,
-                streetViewControl: false, // disable street view control
-                draggableCursor: 'default', // change the draggable cursor to default
-                mapTypeControl: true, // enable map type control
               });
-              this.map = map
-              const markers = [];
-              this.markers = markers;
-              this.map.addListener("click", (e)=>{
-         // Create a marker for clicked position
-         const marker = new google.maps.Marker({
-            position: e.latLng,
-            draggable: true, // make the marker draggable
-            map: this.map,
-            title: "name",
-            label:'',
-            icon: {
-                url:"/images/marker.png",
-                labelOrigin: new google.maps.Point(15,15)
-            },
-        });
-       
+            });
+            // Add click event listener to map
 
-         // Add marker position to markers array
-         const geocoder = new google.maps.Geocoder();
-         geocoder.geocode({ location: e.latLng }, (results, status) =>{
-            if (status === "OK"){
-                if (results[0]){
+            // Create autocomplete search bar
+            const input = this.$refs.autocompleteInput;
+            const autocomplete = new google.maps.places.Autocomplete(input);
+
+            // Set the bounds to the map's viewport to ensure that autocomplete
+            // results are biased towards the visible area of the map.
+            autocomplete.bindTo("bounds", map);
+
+            // Specify just the place data fields that you need.
+            autocomplete.setFields(["place_id", "geometry", "name"]);
+
+            // Listen for the event fired when the user selects a prediction and retrieve
+            // more details for that place.
+            autocomplete.addListener("place_changed", () => {
+              const place = autocomplete.getPlace();
+              if (!place.geometry) {
+                return;
+              }
+              this.$refs.autocompleteInput.value = "";
+              this.$refs.autocompleteInput.placeholder =
+                "search another location";
+
+              // Add marker for selected place
+              const marker = new google.maps.Marker({
+                position: place.geometry.location,
+                map: this.map,
+                draggable: true, // make the marker draggable
+                label: "",
+                icon: {
+                  url: "/images/marker.png",
+                  labelOrigin: new google.maps.Point(15, 15)
+                }
+              });
+
+              // Add marker position to markers array
+              markers.push({
+                marker,
+                lat: place.geometry.location.lat(),
+                lng: place.geometry.location.lng(),
+                name: place.name
+              });
+
+              this.markers = markers;
+              this.markers.forEach((marker, index) => {
+                marker.marker.setLabel({
+                  text: (index + 1).toString(),
+                  color: "black",
+                  fontSize: "12px",
+                  fontWeight: "bold"
+                });
+              });
+              this.map.setZoom(10);
+              this.map.setCenter(place.geometry.location);
+              if (this.markers.length === 1) {
+                this.createBuffer();
+              }
+              if (this.markers.length > 1) {
+                this.calculateDirections();
+              }
+
+              // dragend marker
+              this.markers.forEach((marker, index) => {
+                /* marker.marker.addListener('click', () => this.animateMarker(index)); */
+                marker.marker.addListener("dragend", () => {
+                  const newLatLng = {
+                    lat: marker.marker.getPosition().lat(),
+                    lng: marker.marker.getPosition().lng()
+                  };
+                  const geocoder = new google.maps.Geocoder();
+                  geocoder.geocode(
+                    { location: newLatLng },
+                    (results, status) => {
+                      if (status === "OK") {
+                        if (results[0]) {
+                          const placeName = results[0].formatted_address;
+                          newLatLng.name = placeName;
+                          this.updateMarker(index, newLatLng);
+                          if (this.markers.length > 1) {
+                            this.calculateDirections();
+                          }
+                          if (this.markers.length >= 1) {
+                            this.createBuffer();
+                          }
+                        }
+                      }
+                    }
+                  );
+                });
+              });
+
+              // add info window
+              // this.markers.forEach(markerObj => {
+              //     const marker = markerObj.marker;
+              //     const infoWindow = new google.maps.InfoWindow({
+              //         content: `<div><b>${markerObj.name}</b><br>( ${markerObj.lat} , ${markerObj.lng}</div>`
+              //     });
+
+              //     marker.addListener('click', () => {
+              //         infoWindow.open(map, marker);
+              //     });
+              // });
+            });
+
+            // Initialize directionsService and directionsRenderer
+            this.directionsService = new google.maps.DirectionsService();
+            this.directionsRenderer = new google.maps.DirectionsRenderer({
+              map: this.map,
+              suppressMarkers: true // Set to true to suppress "A" and "B" markers
+            });
+          },
+          () => {
+            console.log("Error: Your browser doesn't support geolocation.");
+            const map = new google.maps.Map(document.getElementById("map"), {
+              center: {
+                lat: 0,
+                lng: 0
+              },
+              zoom: 3,
+              streetViewControl: false, // disable street view control
+              draggableCursor: "default", // change the draggable cursor to default
+              mapTypeControl: true // enable map type control
+            });
+            this.map = map;
+            const markers = [];
+            this.markers = markers;
+            this.map.addListener("click", e => {
+              // Create a marker for clicked position
+              const marker = new google.maps.Marker({
+                position: e.latLng,
+                draggable: true, // make the marker draggable
+                map: this.map,
+                title: "name",
+                label: "",
+                icon: {
+                  url: "/images/marker.png",
+                  labelOrigin: new google.maps.Point(15, 15)
+                }
+              });
+
+              // Add marker position to markers array
+              const geocoder = new google.maps.Geocoder();
+              geocoder.geocode({ location: e.latLng }, (results, status) => {
+                if (status === "OK") {
+                  if (results[0]) {
                     const placeName = results[0].formatted_address;
-                    marker.setTitle(placeName)
+                    marker.setTitle(placeName);
                     // Add marker position and place name to markers array
                     markers.push({
-                        marker,
-                        lat: marker.getPosition().lat(),
-                        lng: marker.getPosition().lng(),
-                        name: placeName,
+                      marker,
+                      lat: marker.getPosition().lat(),
+                      lng: marker.getPosition().lng(),
+                      name: placeName
                     });
-                    this.markers = markers
-                    this.markers.forEach((marker,index)=>{
-                      marker.marker.setLabel({ text: (index + 1).toString(), color: "black" ,fontSize: "12px", fontWeight: "bold" })
-                    })
+                    this.markers = markers;
+                    this.markers.forEach((marker, index) => {
+                      marker.marker.setLabel({
+                        text: (index + 1).toString(),
+                        color: "black",
+                        fontSize: "12px",
+                        fontWeight: "bold"
+                      });
+                    });
                     this.map.setZoom(10);
                     this.map.setCenter(e.latLng);
-                    
-                    if(this.markers.length > 1){
-                        this.calculateDirections()
+
+                    if (this.markers.length > 1) {
+                      this.calculateDirections();
                     }
-                    if(this.markers.length >= 1){
-                        this.createBuffer()
+                    if (this.markers.length >= 1) {
+                      this.createBuffer();
                     }
 
                     // dragend marker
                     this.markers.forEach((marker, index) => {
-                       /*  marker.marker.setLabel((index+1).toString()); */
-                       /*  marker.marker.addListener('click', () => this.animateMarker(index)); */
-                        marker.marker.addListener('dragend', () => {
-                            const newLatLng = {
-                                lat: marker.marker.getPosition().lat(),
-                                lng: marker.marker.getPosition().lng(),
-                            };
-                            const geocoder = new google.maps.Geocoder();
-                            geocoder.geocode({ location: newLatLng }, (results, status) =>{
-                                if (status === "OK"){
-                                    if (results[0]){
-                                        const placeName = results[0].formatted_address;
-                                        newLatLng.name = placeName;
-                                        this.updateMarker(index, newLatLng);
-                                        if(this.markers.length>1){
-                                            this.calculateDirections()
-                                        }
-                                        if(this.markers.length >= 1){
-                                            this.createBuffer()
-                                        }
-                                    }
+                      /*  marker.marker.setLabel((index+1).toString()); */
+                      /*  marker.marker.addListener('click', () => this.animateMarker(index)); */
+                      marker.marker.addListener("dragend", () => {
+                        const newLatLng = {
+                          lat: marker.marker.getPosition().lat(),
+                          lng: marker.marker.getPosition().lng()
+                        };
+                        const geocoder = new google.maps.Geocoder();
+                        geocoder.geocode(
+                          { location: newLatLng },
+                          (results, status) => {
+                            if (status === "OK") {
+                              if (results[0]) {
+                                const placeName = results[0].formatted_address;
+                                newLatLng.name = placeName;
+                                this.updateMarker(index, newLatLng);
+                                if (this.markers.length > 1) {
+                                  this.calculateDirections();
                                 }
-                            });
-                        });
+                                if (this.markers.length >= 1) {
+                                  this.createBuffer();
+                                }
+                              }
+                            }
+                          }
+                        );
+                      });
                     });
 
-                     // add info window
+                    // add info window
                     // this.markers.forEach(markerObj => {
                     //     const marker = markerObj.marker;
                     //     const infoWindow = new google.maps.InfoWindow({
                     //         content: `<div><b>${markerObj.name}</b><br>( ${markerObj.lat} , ${markerObj.lng}</div>`
                     //     });
-                        
+
                     //     marker.addListener('click', () => {
                     //         infoWindow.open(map, marker);
                     //     });
                     // });
-                }
-                else {
+                  } else {
                     console.log("No results found");
+                  }
+                } else {
+                  console.log(`Geocoder failed due to: ${status}`);
                 }
-            }
-            else {
-                console.log(`Geocoder failed due to: ${status}`);
-            }
-         })
-
-      });
-        // Add click event listener to map
-    
-
-      // Create autocomplete search bar
-      const input = this.$refs.autocompleteInput;
-      const autocomplete = new google.maps.places.Autocomplete(input);
-
-      // Set the bounds to the map's viewport to ensure that autocomplete
-      // results are biased towards the visible area of the map.
-      autocomplete.bindTo("bounds", map);
-
-       // Specify just the place data fields that you need.
-       autocomplete.setFields(["place_id", "geometry", "name"]);
-
-        // Listen for the event fired when the user selects a prediction and retrieve
-      // more details for that place.
-      autocomplete.addListener("place_changed", () =>{
-
-        const place = autocomplete.getPlace();
-        if (!place.geometry){
-            return;
-        }
-        this.$refs.autocompleteInput.value = ''
-        this.$refs.autocompleteInput.placeholder = 'search another location'
-
-        // Add marker for selected place
-        const marker = new google.maps.Marker({
-          position: place.geometry.location,
-          map: this.map,
-          draggable: true, // make the marker draggable,
-          label:'',
-          icon: {
-                url:"/images/marker.png",
-                labelOrigin: new google.maps.Point(15,15)
-            },
-        });
-
-         // Add marker position to markers array
-         markers.push({
-          marker,
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-          name:place.name
-        });
-
-        this.markers = markers
-        this.markers.forEach((marker,index)=>{
-          marker.marker.setLabel({ text: (index + 1).toString(), color: "black" ,fontSize: "12px", fontWeight: "bold" })
-        })
-        this.map.setZoom(10);
-        this.map.setCenter(place.geometry.location);
-        if(this.markers.length === 1){
-            this.createBuffer()
-        }
-        if(this.markers.length > 1){
-          this.calculateDirections() 
-        }
-
-        // dragend marker
-        this.markers.forEach((marker, index) => {
-            /* marker.marker.addListener('click', () => this.animateMarker(index)); */
-            marker.marker.addListener('dragend', () => {
-                const newLatLng = {
-                    lat: marker.marker.getPosition().lat(),
-                    lng: marker.marker.getPosition().lng(),
-                };
-                const geocoder = new google.maps.Geocoder();
-                geocoder.geocode({ location: newLatLng }, (results, status) =>{
-                    if (status === "OK"){
-                        if (results[0]){
-                            const placeName = results[0].formatted_address;
-                            newLatLng.name = placeName;
-                            this.updateMarker(index, newLatLng);
-                            if(this.markers.length>1){
-                                this.calculateDirections()
-                            }
-                            if(this.markers.length >= 1){
-                                this.createBuffer()
-                            }
-                        }
-                    }
-                });
-            });
-        });
-        
-        
-      })
-
-      // Initialize directionsService and directionsRenderer
-      this.directionsService = new google.maps.DirectionsService();
-        this.directionsRenderer = new google.maps.DirectionsRenderer({
-            map: this.map,
-            suppressMarkers: true // Set to true to suppress "A" and "B" markers
-        });
-            }
-          )
-        }else{
-          console.log("Error: Your browser doesn't support geolocation.");
-          const map = new google.maps.Map(document.getElementById("map"), {
-                center:{
-                  lat: 0,
-                  lng: 0                 
-                },
-                zoom: 3,
-                streetViewControl: false, // disable street view control
-                draggableCursor: 'default', // change the draggable cursor to default
-                mapTypeControl: true, // enable map type control
               });
-              this.map = map
-              const markers = [];
+            });
+            // Add click event listener to map
+
+            // Create autocomplete search bar
+            const input = this.$refs.autocompleteInput;
+            const autocomplete = new google.maps.places.Autocomplete(input);
+
+            // Set the bounds to the map's viewport to ensure that autocomplete
+            // results are biased towards the visible area of the map.
+            autocomplete.bindTo("bounds", map);
+
+            // Specify just the place data fields that you need.
+            autocomplete.setFields(["place_id", "geometry", "name"]);
+
+            // Listen for the event fired when the user selects a prediction and retrieve
+            // more details for that place.
+            autocomplete.addListener("place_changed", () => {
+              const place = autocomplete.getPlace();
+              if (!place.geometry) {
+                return;
+              }
+              this.$refs.autocompleteInput.value = "";
+              this.$refs.autocompleteInput.placeholder =
+                "search another location";
+
+              // Add marker for selected place
+              const marker = new google.maps.Marker({
+                position: place.geometry.location,
+                map: this.map,
+                draggable: true, // make the marker draggable,
+                label: "",
+                icon: {
+                  url: "/images/marker.png",
+                  labelOrigin: new google.maps.Point(15, 15)
+                }
+              });
+
+              // Add marker position to markers array
+              markers.push({
+                marker,
+                lat: place.geometry.location.lat(),
+                lng: place.geometry.location.lng(),
+                name: place.name
+              });
+
               this.markers = markers;
-              this.map.addListener("click", (e)=>{
-         // Create a marker for clicked position
-         const marker = new google.maps.Marker({
+              this.markers.forEach((marker, index) => {
+                marker.marker.setLabel({
+                  text: (index + 1).toString(),
+                  color: "black",
+                  fontSize: "12px",
+                  fontWeight: "bold"
+                });
+              });
+              this.map.setZoom(10);
+              this.map.setCenter(place.geometry.location);
+              if (this.markers.length === 1) {
+                this.createBuffer();
+              }
+              if (this.markers.length > 1) {
+                this.calculateDirections();
+              }
+
+              // dragend marker
+              this.markers.forEach((marker, index) => {
+                /* marker.marker.addListener('click', () => this.animateMarker(index)); */
+                marker.marker.addListener("dragend", () => {
+                  const newLatLng = {
+                    lat: marker.marker.getPosition().lat(),
+                    lng: marker.marker.getPosition().lng()
+                  };
+                  const geocoder = new google.maps.Geocoder();
+                  geocoder.geocode(
+                    { location: newLatLng },
+                    (results, status) => {
+                      if (status === "OK") {
+                        if (results[0]) {
+                          const placeName = results[0].formatted_address;
+                          newLatLng.name = placeName;
+                          this.updateMarker(index, newLatLng);
+                          if (this.markers.length > 1) {
+                            this.calculateDirections();
+                          }
+                          if (this.markers.length >= 1) {
+                            this.createBuffer();
+                          }
+                        }
+                      }
+                    }
+                  );
+                });
+              });
+            });
+
+            // Initialize directionsService and directionsRenderer
+            this.directionsService = new google.maps.DirectionsService();
+            this.directionsRenderer = new google.maps.DirectionsRenderer({
+              map: this.map,
+              suppressMarkers: true // Set to true to suppress "A" and "B" markers
+            });
+          }
+        );
+      } else {
+        console.log("Error: Your browser doesn't support geolocation.");
+        const map = new google.maps.Map(document.getElementById("map"), {
+          center: {
+            lat: 0,
+            lng: 0
+          },
+          zoom: 3,
+          streetViewControl: false, // disable street view control
+          draggableCursor: "default", // change the draggable cursor to default
+          mapTypeControl: true // enable map type control
+        });
+        this.map = map;
+        const markers = [];
+        this.markers = markers;
+        this.map.addListener("click", e => {
+          // Create a marker for clicked position
+          const marker = new google.maps.Marker({
             position: e.latLng,
             draggable: true, // make the marker draggable
             map: this.map,
-            label:'',
+            label: "",
             title: "name",
             icon: {
-                url:"/images/marker.png",
-                labelOrigin: new google.maps.Point(15,15)
-            },
-        });
-       
-
-         // Add marker position to markers array
-         const geocoder = new google.maps.Geocoder();
-         geocoder.geocode({ location: e.latLng }, (results, status) =>{
-            if (status === "OK"){
-                if (results[0]){
-                    const placeName = results[0].formatted_address;
-                    marker.setTitle(placeName)
-                    // Add marker position and place name to markers array
-                    markers.push({
-                        marker,
-                        lat: marker.getPosition().lat(),
-                        lng: marker.getPosition().lng(),
-                        name: placeName,
-                    });
-                    this.markers = markers
-                    this.markers.forEach((marker,index)=>{
-                      marker.marker.setLabel({ text: (index + 1).toString(), color: "black" ,fontSize: "12px", fontWeight: "bold" })
-                    })
-                    this.map.setZoom(10);
-                    this.map.setCenter(e.latLng);
-                    
-                    if(this.markers.length > 1){
-                        this.calculateDirections()
-                    }
-                    if(this.markers.length >= 1){
-                        this.createBuffer()
-                    }
-
-                    // dragend marker
-                    this.markers.forEach((marker, index) => {
-                       /*  marker.marker.setLabel((index+1).toString()); */
-                       /*  marker.marker.addListener('click', () => this.animateMarker(index)); */
-                        marker.marker.addListener('dragend', () => {
-                            const newLatLng = {
-                                lat: marker.marker.getPosition().lat(),
-                                lng: marker.marker.getPosition().lng(),
-                            };
-                            const geocoder = new google.maps.Geocoder();
-                            geocoder.geocode({ location: newLatLng }, (results, status) =>{
-                                if (status === "OK"){
-                                    if (results[0]){
-                                        const placeName = results[0].formatted_address;
-                                        newLatLng.name = placeName;
-                                        this.updateMarker(index, newLatLng);
-                                        if(this.markers.length>1){
-                                            this.calculateDirections()
-                                        }
-                                        if(this.markers.length >= 1){
-                                            this.createBuffer()
-                                        }
-                                    }
-                                }
-                            });
-                        });
-                    });
-
-                     // add info window
-                    // this.markers.forEach(markerObj => {
-                    //     const marker = markerObj.marker;
-                    //     const infoWindow = new google.maps.InfoWindow({
-                    //         content: `<div><b>${markerObj.name}</b><br>( ${markerObj.lat} , ${markerObj.lng}</div>`
-                    //     });
-                        
-                    //     marker.addListener('click', () => {
-                    //         infoWindow.open(map, marker);
-                    //     });
-                    // });
-                }
-                else {
-                    console.log("No results found");
-                }
+              url: "/images/marker.png",
+              labelOrigin: new google.maps.Point(15, 15)
             }
-            else {
-                console.log(`Geocoder failed due to: ${status}`);
-            }
-         })
+          });
 
-      });
-        // Add click event listener to map
-    
+          // Add marker position to markers array
+          const geocoder = new google.maps.Geocoder();
+          geocoder.geocode({ location: e.latLng }, (results, status) => {
+            if (status === "OK") {
+              if (results[0]) {
+                const placeName = results[0].formatted_address;
+                marker.setTitle(placeName);
+                // Add marker position and place name to markers array
+                markers.push({
+                  marker,
+                  lat: marker.getPosition().lat(),
+                  lng: marker.getPosition().lng(),
+                  name: placeName
+                });
+                this.markers = markers;
+                this.markers.forEach((marker, index) => {
+                  marker.marker.setLabel({
+                    text: (index + 1).toString(),
+                    color: "black",
+                    fontSize: "12px",
+                    fontWeight: "bold"
+                  });
+                });
+                this.map.setZoom(10);
+                this.map.setCenter(e.latLng);
 
-      // Create autocomplete search bar
-      const input = this.$refs.autocompleteInput;
-      const autocomplete = new google.maps.places.Autocomplete(input);
+                if (this.markers.length > 1) {
+                  this.calculateDirections();
+                }
+                if (this.markers.length >= 1) {
+                  this.createBuffer();
+                }
 
-      // Set the bounds to the map's viewport to ensure that autocomplete
-      // results are biased towards the visible area of the map.
-      autocomplete.bindTo("bounds", map);
-
-       // Specify just the place data fields that you need.
-       autocomplete.setFields(["place_id", "geometry", "name"]);
-
-        // Listen for the event fired when the user selects a prediction and retrieve
-      // more details for that place.
-      autocomplete.addListener("place_changed", () =>{
-
-        const place = autocomplete.getPlace();
-        if (!place.geometry){
-            return;
-        }
-        this.$refs.autocompleteInput.value = ''
-        this.$refs.autocompleteInput.placeholder = 'search another location'
-
-        // Add marker for selected place
-        const marker = new google.maps.Marker({
-          position: place.geometry.location,
-          map: this.map,
-          draggable: true, // make the marker draggable
-          label:'',
-          icon: {
-                url:"/images/marker.png",
-                labelOrigin: new google.maps.Point(15,15)
-            },
-        });
-
-         // Add marker position to markers array
-         markers.push({
-          marker,
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-          name:place.name
-        });
-
-        this.markers = markers
-        this.markers.forEach((marker,index)=>{
-          marker.marker.setLabel({ text: (index + 1).toString(), color: "black" ,fontSize: "12px", fontWeight: "bold" })
-        })
-        this.map.setZoom(10);
-        this.map.setCenter(place.geometry.location);
-        if(this.markers.length === 1){
-            this.createBuffer()
-        }
-        if(this.markers.length > 1){
-          this.calculateDirections() 
-        }
-
-        // dragend marker
-        this.markers.forEach((marker, index) => {
-            /* marker.marker.addListener('click', () => this.animateMarker(index)); */
-            marker.marker.addListener('dragend', () => {
-                const newLatLng = {
-                    lat: marker.marker.getPosition().lat(),
-                    lng: marker.marker.getPosition().lng(),
-                };
-                const geocoder = new google.maps.Geocoder();
-                geocoder.geocode({ location: newLatLng }, (results, status) =>{
-                    if (status === "OK"){
-                        if (results[0]){
+                // dragend marker
+                this.markers.forEach((marker, index) => {
+                  /*  marker.marker.setLabel((index+1).toString()); */
+                  /*  marker.marker.addListener('click', () => this.animateMarker(index)); */
+                  marker.marker.addListener("dragend", () => {
+                    const newLatLng = {
+                      lat: marker.marker.getPosition().lat(),
+                      lng: marker.marker.getPosition().lng()
+                    };
+                    const geocoder = new google.maps.Geocoder();
+                    geocoder.geocode(
+                      { location: newLatLng },
+                      (results, status) => {
+                        if (status === "OK") {
+                          if (results[0]) {
                             const placeName = results[0].formatted_address;
                             newLatLng.name = placeName;
                             this.updateMarker(index, newLatLng);
-                            if(this.markers.length>1){
-                                this.calculateDirections()
+                            if (this.markers.length > 1) {
+                              this.calculateDirections();
                             }
-                            if(this.markers.length >= 1){
-                                this.createBuffer()
+                            if (this.markers.length >= 1) {
+                              this.createBuffer();
                             }
+                          }
                         }
-                    }
+                      }
+                    );
+                  });
                 });
-            });
-        });
-        
-        // add info window
-        // this.markers.forEach(markerObj => {
-        //     const marker = markerObj.marker;
-        //     const infoWindow = new google.maps.InfoWindow({
-        //         content: `<div><b>${markerObj.name}</b><br>( ${markerObj.lat} , ${markerObj.lng}</div>`
-        //     });
-            
-        //     marker.addListener('click', () => {
-        //         infoWindow.open(map, marker);
-        //     });
-        // });
-      })
 
-      // Initialize directionsService and directionsRenderer
-      this.directionsService = new google.maps.DirectionsService();
-        this.directionsRenderer = new google.maps.DirectionsRenderer({
-            map: this.map,
-            suppressMarkers: true // Set to true to suppress "A" and "B" markers
+                // add info window
+                // this.markers.forEach(markerObj => {
+                //     const marker = markerObj.marker;
+                //     const infoWindow = new google.maps.InfoWindow({
+                //         content: `<div><b>${markerObj.name}</b><br>( ${markerObj.lat} , ${markerObj.lng}</div>`
+                //     });
+
+                //     marker.addListener('click', () => {
+                //         infoWindow.open(map, marker);
+                //     });
+                // });
+              } else {
+                console.log("No results found");
+              }
+            } else {
+              console.log(`Geocoder failed due to: ${status}`);
+            }
+          });
         });
-        }       
-    }
+        // Add click event listener to map
+
+        // Create autocomplete search bar
+        const input = this.$refs.autocompleteInput;
+        const autocomplete = new google.maps.places.Autocomplete(input);
+
+        // Set the bounds to the map's viewport to ensure that autocomplete
+        // results are biased towards the visible area of the map.
+        autocomplete.bindTo("bounds", map);
+
+        // Specify just the place data fields that you need.
+        autocomplete.setFields(["place_id", "geometry", "name"]);
+
+        // Listen for the event fired when the user selects a prediction and retrieve
+        // more details for that place.
+        autocomplete.addListener("place_changed", () => {
+          const place = autocomplete.getPlace();
+          if (!place.geometry) {
+            return;
+          }
+          this.$refs.autocompleteInput.value = "";
+          this.$refs.autocompleteInput.placeholder = "search another location";
+
+          // Add marker for selected place
+          const marker = new google.maps.Marker({
+            position: place.geometry.location,
+            map: this.map,
+            draggable: true, // make the marker draggable
+            label: "",
+            icon: {
+              url: "/images/marker.png",
+              labelOrigin: new google.maps.Point(15, 15)
+            }
+          });
+
+          // Add marker position to markers array
+          markers.push({
+            marker,
+            lat: place.geometry.location.lat(),
+            lng: place.geometry.location.lng(),
+            name: place.name
+          });
+
+          this.markers = markers;
+          this.markers.forEach((marker, index) => {
+            marker.marker.setLabel({
+              text: (index + 1).toString(),
+              color: "black",
+              fontSize: "12px",
+              fontWeight: "bold"
+            });
+          });
+          this.map.setZoom(10);
+          this.map.setCenter(place.geometry.location);
+          if (this.markers.length === 1) {
+            this.createBuffer();
+          }
+          if (this.markers.length > 1) {
+            this.calculateDirections();
+          }
+
+          // dragend marker
+          this.markers.forEach((marker, index) => {
+            /* marker.marker.addListener('click', () => this.animateMarker(index)); */
+            marker.marker.addListener("dragend", () => {
+              const newLatLng = {
+                lat: marker.marker.getPosition().lat(),
+                lng: marker.marker.getPosition().lng()
+              };
+              const geocoder = new google.maps.Geocoder();
+              geocoder.geocode({ location: newLatLng }, (results, status) => {
+                if (status === "OK") {
+                  if (results[0]) {
+                    const placeName = results[0].formatted_address;
+                    newLatLng.name = placeName;
+                    this.updateMarker(index, newLatLng);
+                    if (this.markers.length > 1) {
+                      this.calculateDirections();
+                    }
+                    if (this.markers.length >= 1) {
+                      this.createBuffer();
+                    }
+                  }
+                }
+              });
+            });
+          });
+
+          // add info window
+          // this.markers.forEach(markerObj => {
+          //     const marker = markerObj.marker;
+          //     const infoWindow = new google.maps.InfoWindow({
+          //         content: `<div><b>${markerObj.name}</b><br>( ${markerObj.lat} , ${markerObj.lng}</div>`
+          //     });
+
+          //     marker.addListener('click', () => {
+          //         infoWindow.open(map, marker);
+          //     });
+          // });
+        });
+
+        // Initialize directionsService and directionsRenderer
+        this.directionsService = new google.maps.DirectionsService();
+        this.directionsRenderer = new google.maps.DirectionsRenderer({
+          map: this.map,
+          suppressMarkers: true // Set to true to suppress "A" and "B" markers
+        });
+      }
+    };
     /* -------------end map1------------- */
     this.$nextTick(() => {
       if (this.$refs.tab2.isActive) {
-          this.initMap2();
+        this.initMap2();
       }
     });
     // get categories
@@ -2166,87 +2255,87 @@ export default {
     var years = generateArrayOfYears();
 
     this.models = years;
-    
   },
   methods: {
-    initMap2(){
-      if(this.markers.length > 0){
-      const map = new google.maps.Map(document.getElementById("map2"), {
-        center: { lat: 31.229389862175648, lng: 29.959807012803527 },
-        zoom: 10,
-        streetViewControl: false, // disable street view control
-        draggableCursor: 'default', // change the draggable cursor to default
-        mapTypeControl: false, // enable map type control
-      });
-      this.map2 = map;
-      this.allWaysPoints = this.allPoints
-
-
-        console.log('all points' , this.allWaysPoints)
-         // Create a LatLngBounds object
-      const bounds = new google.maps.LatLngBounds();
-
-      this.markers.forEach((marker1) => {
-        const marker = new google.maps.Marker({
-          position: { lat: marker1.lat, lng: marker1.lng },
-          map: map,
+    initMap2() {
+      if (this.markers.length > 0) {
+        const map = new google.maps.Map(document.getElementById("map2"), {
+          center: { lat: 31.229389862175648, lng: 29.959807012803527 },
+          zoom: 10,
+          streetViewControl: false, // disable street view control
+          draggableCursor: "default", // change the draggable cursor to default
+          mapTypeControl: false // enable map type control
         });
-        this.allMarkers.push({
-          marker,
-          lat: marker1.lat,
-          lng: marker1.lng,
+        this.map2 = map;
+        this.allWaysPoints = this.allPoints;
+
+        console.log("all points", this.allWaysPoints);
+        // Create a LatLngBounds object
+        const bounds = new google.maps.LatLngBounds();
+
+        this.markers.forEach(marker1 => {
+          const marker = new google.maps.Marker({
+            position: { lat: marker1.lat, lng: marker1.lng },
+            map: map
+          });
+          this.allMarkers.push({
+            marker,
+            lat: marker1.lat,
+            lng: marker1.lng
+          });
+          bounds.extend(marker1.marker.getPosition());
         });
-        bounds.extend(marker1.marker.getPosition());
-      });
-      // Center the map around the bounds
+        // Center the map around the bounds
         this.map2.fitBounds(bounds);
-      console.log('the map2 is',this.map2)
+        console.log("the map2 is", this.map2);
 
-      // Create a new DirectionsRenderer object for map2
-      this.directionsService2 = new google.maps.DirectionsService();
-      this.directionsRenderer2 = new google.maps.DirectionsRenderer({
-        map: this.map2,
-        suppressMarkers: true,
-      });
+        // Create a new DirectionsRenderer object for map2
+        this.directionsService2 = new google.maps.DirectionsService();
+        this.directionsRenderer2 = new google.maps.DirectionsRenderer({
+          map: this.map2,
+          suppressMarkers: true
+        });
         // Ensure there are at least two markers to calculate directions
         if (this.allMarkers.length < 2) {
-            return;
+          return;
         }
 
         // Create an array of LatLng objects from the markers array
-        const waypoints = this.allMarkers.map((marker) => {
-            return { location: new google.maps.LatLng(marker.lat, marker.lng) };
+        const waypoints = this.allMarkers.map(marker => {
+          return { location: new google.maps.LatLng(marker.lat, marker.lng) };
         });
 
         // Create a DirectionsRequest object
         const request = {
-            origin: new google.maps.LatLng(this.allMarkers[0].lat, this.allMarkers[0].lng),
-            destination: new google.maps.LatLng(
+          origin: new google.maps.LatLng(
+            this.allMarkers[0].lat,
+            this.allMarkers[0].lng
+          ),
+          destination: new google.maps.LatLng(
             this.allMarkers[this.allMarkers.length - 1].lat,
             this.allMarkers[this.allMarkers.length - 1].lng
-            ),
-            waypoints: waypoints.slice(1, -1),
-            optimizeWaypoints: true,
-            travelMode: google.maps.TravelMode.DRIVING,
+          ),
+          waypoints: waypoints.slice(1, -1),
+          optimizeWaypoints: true,
+          travelMode: google.maps.TravelMode.DRIVING
         };
 
         // Call DirectionsService to calculate the route
         this.directionsService2.route(request, (response, status) => {
-            if (status === google.maps.DirectionsStatus.OK) {
-                this.directionsCalculated2 = true; // Set the flag to true
+          if (status === google.maps.DirectionsStatus.OK) {
+            this.directionsCalculated2 = true; // Set the flag to true
             // Add direction coordinates to response object
             const direction = response.routes[0].legs[0].start_location;
             response.direction = {
-                lat: direction.lat(),
-                lng: direction.lng(),
+              lat: direction.lat(),
+              lng: direction.lng()
             };
 
             // Display directions on map
             if (this.directionsRenderer2) {
-                this.directionsRenderer2.setDirections(response);
-               if (this.bufferRadius < 101) {
+              this.directionsRenderer2.setDirections(response);
+              if (this.bufferRadius < 101) {
                 if (this.markers.length === 1) {
-                  
                   // Create a buffer as a circle around the marker
                   const marker = this.allMarkers[0].marker;
                   const center = marker.getPosition();
@@ -2259,7 +2348,7 @@ export default {
                     fillOpacity: 0.35,
                     map: this.map2,
                     center: center,
-                    radius: radius,
+                    radius: radius
                   };
                   const circle = new google.maps.Circle(options);
                   // Remove the old buffer
@@ -2268,17 +2357,22 @@ export default {
                   }
                   this.circle = circle;
                 } else if (this.directionsCalculated) {
-               
                   // Remove the old buffer
                   if (this.circle) {
                     this.circle.setMap(null);
                   }
                   // Create a buffer around the route
-                  const lineString = turf.lineString(this.allWaysPoints.map(point => [point.lng, point.lat]));
-                  const buffer = turf.buffer(lineString, this.bufferRadius, { units: "kilometers" });
-                  const coordinates = buffer.geometry.coordinates[0].map((point) => {
-                    return { lat: point[1], lng: point[0] };
+                  const lineString = turf.lineString(
+                    this.allWaysPoints.map(point => [point.lng, point.lat])
+                  );
+                  const buffer = turf.buffer(lineString, this.bufferRadius, {
+                    units: "kilometers"
                   });
+                  const coordinates = buffer.geometry.coordinates[0].map(
+                    point => {
+                      return { lat: point[1], lng: point[0] };
+                    }
+                  );
                   // Create a new buffer polygon
                   const options = {
                     paths: coordinates,
@@ -2287,203 +2381,202 @@ export default {
                     strokeWeight: 2,
                     fillColor: "#007aff",
                     fillOpacity: 0.35,
-                    map: this.map2,
+                    map: this.map2
                   };
                   const polygon = new google.maps.Polygon(options);
                   this.circle = polygon;
                 }
-               }else{
+              } else {
                 if (this.circle) {
-                    this.circle.setMap(null);
-                  }
-               }
+                  this.circle.setMap(null);
+                }
+              }
             }
             // Set the same directions on the directionsRenderer2 object
             // Save response to component data
             this.directionsResponse = response;
 
             // Add direction coordinates to allPoints array
-            
 
             /* this.createBuffer(); */
-            } else {
-              if (this.bufferRadius < 101) {
-                const path = this.allMarkers.map((marker) => new google.maps.LatLng(marker.lat, marker.lng));
+          } else {
+            if (this.bufferRadius < 101) {
+              const path = this.allMarkers.map(
+                marker => new google.maps.LatLng(marker.lat, marker.lng)
+              );
               const polyline = new google.maps.Polyline({
-                  path: path,
-                  strokeColor: "#FF0000",
-                  strokeOpacity: 1.0,
-                  strokeWeight: 3,
-                  map: this.map2,
+                path: path,
+                strokeColor: "#FF0000",
+                strokeOpacity: 1.0,
+                strokeWeight: 3,
+                map: this.map2
               });
               // Save the line to component data
-                  this.line2 = polyline;
-                  const data = []
-                  for (let i = 0; i < this.markers.length; i++) {
-                    const latLng = {
-                      lat: this.markers[i].lat,
-                      lng: this.markers[i].lng,
-                    };
-                    data.push(latLng);
-                    if (i === this.markers.length - 1) {
-                      // Add the final marker to the allPoints array
-                      const latLng = {
-                        lat: this.markers[i].lat,
-                        lng: this.markers[i].lng,
-                      };
-                      data.push(latLng);
-                    }
-                    this.allWaysPoints = data;
-                    this.directionsCalculated = true;
-                  }
-                  if (this.markers.length === 1) {
-                  
-                  // Create a buffer as a circle around the marker
-                  const marker = this.allMarkers[0].marker;
-                  const center = marker.getPosition();
-                  const radius = this.bufferRadius * 1000;
-                  const options = {
-                    strokeColor: "#007aff",
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    fillColor: "#007aff",
-                    fillOpacity: 0.35,
-                    map: this.map2,
-                    center: center,
-                    radius: radius,
+              this.line2 = polyline;
+              const data = [];
+              for (let i = 0; i < this.markers.length; i++) {
+                const latLng = {
+                  lat: this.markers[i].lat,
+                  lng: this.markers[i].lng
+                };
+                data.push(latLng);
+                if (i === this.markers.length - 1) {
+                  // Add the final marker to the allPoints array
+                  const latLng = {
+                    lat: this.markers[i].lat,
+                    lng: this.markers[i].lng
                   };
-                  const circle = new google.maps.Circle(options);
-                  // Remove the old buffer
-                  if (this.circle) {
-                    this.circle.setMap(null);
-                  }
-                  this.circle = circle;
-                } else if (this.directionsCalculated) {
-               
-                  // Remove the old buffer
-                  if (this.circle) {
-                    this.circle.setMap(null);
-                  }
-                  // Create a buffer around the route
-                  const lineString = turf.lineString(this.allWaysPoints.map(point => [point.lng, point.lat]));
-                  const buffer = turf.buffer(lineString, this.bufferRadius, { units: "kilometers" });
-                  const coordinates = buffer.geometry.coordinates[0].map((point) => {
-                    return { lat: point[1], lng: point[0] };
-                  });
-                  // Create a new buffer polygon
-                  const options = {
-                    paths: coordinates,
-                    strokeColor: "#007aff",
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    fillColor: "#007aff",
-                    fillOpacity: 0.35,
-                    map: this.map2,
-                  };
-                  const polygon = new google.maps.Polygon(options);
-                  this.circle = polygon;
+                  data.push(latLng);
                 }
-              }else{
-                if (this.circle) {
-                    this.circle.setMap(null);
-                  }
+                this.allWaysPoints = data;
+                this.directionsCalculated = true;
               }
-
+              if (this.markers.length === 1) {
+                // Create a buffer as a circle around the marker
+                const marker = this.allMarkers[0].marker;
+                const center = marker.getPosition();
+                const radius = this.bufferRadius * 1000;
+                const options = {
+                  strokeColor: "#007aff",
+                  strokeOpacity: 0.8,
+                  strokeWeight: 2,
+                  fillColor: "#007aff",
+                  fillOpacity: 0.35,
+                  map: this.map2,
+                  center: center,
+                  radius: radius
+                };
+                const circle = new google.maps.Circle(options);
+                // Remove the old buffer
+                if (this.circle) {
+                  this.circle.setMap(null);
+                }
+                this.circle = circle;
+              } else if (this.directionsCalculated) {
+                // Remove the old buffer
+                if (this.circle) {
+                  this.circle.setMap(null);
+                }
+                // Create a buffer around the route
+                const lineString = turf.lineString(
+                  this.allWaysPoints.map(point => [point.lng, point.lat])
+                );
+                const buffer = turf.buffer(lineString, this.bufferRadius, {
+                  units: "kilometers"
+                });
+                const coordinates = buffer.geometry.coordinates[0].map(
+                  point => {
+                    return { lat: point[1], lng: point[0] };
+                  }
+                );
+                // Create a new buffer polygon
+                const options = {
+                  paths: coordinates,
+                  strokeColor: "#007aff",
+                  strokeOpacity: 0.8,
+                  strokeWeight: 2,
+                  fillColor: "#007aff",
+                  fillOpacity: 0.35,
+                  map: this.map2
+                };
+                const polygon = new google.maps.Polygon(options);
+                this.circle = polygon;
+              }
+            } else {
+              if (this.circle) {
+                this.circle.setMap(null);
+              }
             }
+          }
         });
-       
-            }
-            return true
+      }
+      return true;
     },
     removeMarker(index) {
-     
-        const marker = this.markers[index].marker;
-        marker.setMap(null); // remove marker from the map
-        this.markers.splice(index, 1); // remove marker from the markers array
-        if(this.markers.length === 0){
-          console.log('dalia')
-          this.directionsCalculated = false
-          this.$refs.autocompleteInput.placeholder = 'search for location'
-          this.allPoints = []
-            // Remove buffer from the map
-            if (this.buffer) {
-                this.buffer.setMap(null);
-                this.buffer = null;
-            }
-            // Remove directions from the map
-            if (this.directionsRenderer) {
-                this.directionsRenderer.setMap(null);
-                this.directionsRenderer = null;
-                this.directions = null;
-            }
-            if (this.line) {
-              this.line.setMap(null)
-            }
-            // Initialize directionsService and directionsRenderer
-            this.directionsService = new google.maps.DirectionsService();
-            this.directionsRenderer = new google.maps.DirectionsRenderer({
-                map: this.map,
-                suppressMarkers: true // Set to true to suppress "A" and "B" markers
-            });
-        }
-        else if(this.markers.length === 1){
-          console.log('ahmed')
-          this.directionsCalculated = false
-          if (this.buffer) {
-                this.buffer.setMap(null);
-                this.buffer = null;
-            }
-            // Remove directions from the map
-            if (this.directionsRenderer) {
-                this.directionsRenderer.setMap(null);
-                this.directionsRenderer = null;
-                this.directions = null;
-                
-            }
-             this.directionsService = new google.maps.DirectionsService();
-            this.directionsRenderer = new google.maps.DirectionsRenderer({
-                map: this.map,
-                suppressMarkers: true // Set to true to suppress "A" and "B" markers
-            });
-            this.createBuffer()
-        }
-        else if(this.markers.length > 1){
-          console.log('beeeeeb')
-            this.calculateDirections()
-            this.createBuffer()
-        }
-            console.log("marker length:",this.markers.length)
-    },
-    resetMap(){
-      this.allPoints = []
-        this.markers.forEach((marker) =>{
-            marker.marker.setMap(null);
-        })
-        this.markers.splice(0);
-        /* console.log("markers length",this.markers.length) */
-
+      const marker = this.markers[index].marker;
+      marker.setMap(null); // remove marker from the map
+      this.markers.splice(index, 1); // remove marker from the markers array
+      if (this.markers.length === 0) {
+        console.log("dalia");
+        this.directionsCalculated = false;
+        this.$refs.autocompleteInput.placeholder = "search for location";
+        this.allPoints = [];
         // Remove buffer from the map
         if (this.buffer) {
-            this.buffer.setMap(null);
-            this.buffer = null;
+          this.buffer.setMap(null);
+          this.buffer = null;
         }
-
         // Remove directions from the map
         if (this.directionsRenderer) {
-            this.directionsRenderer.setMap(null);
-            this.directionsRenderer = null;
-            this.directions = null;
+          this.directionsRenderer.setMap(null);
+          this.directionsRenderer = null;
+          this.directions = null;
         }
-        if(this.line){
-          this.line.setMap(null)
+        if (this.line) {
+          this.line.setMap(null);
         }
-
         // Initialize directionsService and directionsRenderer
         this.directionsService = new google.maps.DirectionsService();
         this.directionsRenderer = new google.maps.DirectionsRenderer({
-            map: this.map,
-            suppressMarkers: true // Set to true to suppress "A" and "B" markers
+          map: this.map,
+          suppressMarkers: true // Set to true to suppress "A" and "B" markers
         });
+      } else if (this.markers.length === 1) {
+        console.log("ahmed");
+        this.directionsCalculated = false;
+        if (this.buffer) {
+          this.buffer.setMap(null);
+          this.buffer = null;
+        }
+        // Remove directions from the map
+        if (this.directionsRenderer) {
+          this.directionsRenderer.setMap(null);
+          this.directionsRenderer = null;
+          this.directions = null;
+        }
+        this.directionsService = new google.maps.DirectionsService();
+        this.directionsRenderer = new google.maps.DirectionsRenderer({
+          map: this.map,
+          suppressMarkers: true // Set to true to suppress "A" and "B" markers
+        });
+        this.createBuffer();
+      } else if (this.markers.length > 1) {
+        console.log("beeeeeb");
+        this.calculateDirections();
+        this.createBuffer();
+      }
+      console.log("marker length:", this.markers.length);
+    },
+    resetMap() {
+      this.allPoints = [];
+      this.markers.forEach(marker => {
+        marker.marker.setMap(null);
+      });
+      this.markers.splice(0);
+      /* console.log("markers length",this.markers.length) */
+
+      // Remove buffer from the map
+      if (this.buffer) {
+        this.buffer.setMap(null);
+        this.buffer = null;
+      }
+
+      // Remove directions from the map
+      if (this.directionsRenderer) {
+        this.directionsRenderer.setMap(null);
+        this.directionsRenderer = null;
+        this.directions = null;
+      }
+      if (this.line) {
+        this.line.setMap(null);
+      }
+
+      // Initialize directionsService and directionsRenderer
+      this.directionsService = new google.maps.DirectionsService();
+      this.directionsRenderer = new google.maps.DirectionsRenderer({
+        map: this.map,
+        suppressMarkers: true // Set to true to suppress "A" and "B" markers
+      });
     },
     updateMarker(index, newLatLng) {
       // update the marker's position and store the new lat/lng in this.markers
@@ -2493,189 +2586,197 @@ export default {
       this.markers[index].marker.setPosition(newLatLng);
     },
     animateMarker(index) {
-        const marker = this.markers[index].marker
-        marker.setAnimation(google.maps.Animation.BOUNCE);
-        // const infoWindow = new google.maps.InfoWindow({
-        //     content: `<div><b>${this.markers[index].name}</b><br>( ${this.markers[index].lat} , ${this.markers[index].lng}</div>`
-        // });
-        // infoWindow.open(map, marker);
-        // // store a reference to the info window
-        // this.currentInfoWindow = infoWindow;
+      const marker = this.markers[index].marker;
+      marker.setAnimation(google.maps.Animation.BOUNCE);
+      // const infoWindow = new google.maps.InfoWindow({
+      //     content: `<div><b>${this.markers[index].name}</b><br>( ${this.markers[index].lat} , ${this.markers[index].lng}</div>`
+      // });
+      // infoWindow.open(map, marker);
+      // // store a reference to the info window
+      // this.currentInfoWindow = infoWindow;
     },
     stopAnimation(index) {
-        this.markers[index].marker.setAnimation(null);
-        // close the info window
-        // if (this.currentInfoWindow) {
-        //     this.currentInfoWindow.close();
-        // }
+      this.markers[index].marker.setAnimation(null);
+      // close the info window
+      // if (this.currentInfoWindow) {
+      //     this.currentInfoWindow.close();
+      // }
     },
-    scrollToMap(){
-      document.getElementById('map').scrollIntoView({ behavior: "smooth" })
+    scrollToMap() {
+      document.getElementById("map").scrollIntoView({ behavior: "smooth" });
     },
-    addMarker(){
-      
-    },
-   
+    addMarker() {},
+
     calculateDirections() {
-        // Clear allPoints array
-        this.allPoints = [];
-        const selectedMode = document.getElementById("mode").value;
-        // Ensure there are at least two markers to calculate directions
-        if (this.markers.length < 2) {
-            alert("Please add at least two markers to calculate directions.");
-            return;
-        }
+      // Clear allPoints array
+      this.allPoints = [];
+      const selectedMode = document.getElementById("mode").value;
+      // Ensure there are at least two markers to calculate directions
+      if (this.markers.length < 2) {
+        alert("Please add at least two markers to calculate directions.");
+        return;
+      }
 
-        // Create an array of LatLng objects from the markers array
-        const waypoints = this.markers.map((marker) => {
-            return { location: new google.maps.LatLng(marker.lat, marker.lng) };
-        });
-        this.waypoints = waypoints
+      // Create an array of LatLng objects from the markers array
+      const waypoints = this.markers.map(marker => {
+        return { location: new google.maps.LatLng(marker.lat, marker.lng) };
+      });
+      this.waypoints = waypoints;
 
-        // Create a DirectionsRequest object
-        const request = {
-            origin: new google.maps.LatLng(this.markers[0].lat, this.markers[0].lng),
-            destination: new google.maps.LatLng(
-            this.markers[this.markers.length - 1].lat,
-            this.markers[this.markers.length - 1].lng
-            ),
-            waypoints: waypoints.slice(1, -1),
-            optimizeWaypoints: true,
-            travelMode: google.maps.TravelMode[selectedMode],
-        };
+      // Create a DirectionsRequest object
+      const request = {
+        origin: new google.maps.LatLng(
+          this.markers[0].lat,
+          this.markers[0].lng
+        ),
+        destination: new google.maps.LatLng(
+          this.markers[this.markers.length - 1].lat,
+          this.markers[this.markers.length - 1].lng
+        ),
+        waypoints: waypoints.slice(1, -1),
+        optimizeWaypoints: true,
+        travelMode: google.maps.TravelMode[selectedMode]
+      };
 
-        // Call DirectionsService to calculate the route
-        this.directionsService.route(request, (response, status) => {
-            if (status === google.maps.DirectionsStatus.OK) {
-                this.directionsCalculated = true; // Set the flag to true
-                
-            // Add direction coordinates to response object
-            const direction = response.routes[0].legs[0].start_location;
-            response.direction = {
-                lat: direction.lat(),
-                lng: direction.lng(),
-            };
+      // Call DirectionsService to calculate the route
+      this.directionsService.route(request, (response, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          this.directionsCalculated = true; // Set the flag to true
 
-            // Display directions on map
-            if (this.directionsRenderer) {
-                this.directionsRenderer.setDirections(response);
-                  // Add direction coordinates to allPoints array
-                  const data = [];
-                const legs = response.routes[0].legs;
-                for (let i = 0; i < legs.length; i++) {
-                    const steps = legs[i].steps;
-                    for (let j = 0; j < steps.length; j++) {
-                        const polyline = steps[j].polyline;
-                        const decoded = google.maps.geometry.encoding.decodePath(polyline.points);
-                        for (let k = 0; k < decoded.length; k++) {
-                            const latLng = {
-                                lat: decoded[k].lat(),
-                                lng: decoded[k].lng(),
-                            };
-                            data.push(latLng);
-                            this.allPoints = data;
-                        }
-                    }
-                }
-                this.createBuffer();
-            }
-             // Set the same directions on the directionsRenderer2 object
-            // Save response to component data
-            this.directionsResponse = response;
+          // Add direction coordinates to response object
+          const direction = response.routes[0].legs[0].start_location;
+          response.direction = {
+            lat: direction.lat(),
+            lng: direction.lng()
+          };
 
+          // Display directions on map
+          if (this.directionsRenderer) {
+            this.directionsRenderer.setDirections(response);
             // Add direction coordinates to allPoints array
-            
-
-            /* this.createBuffer(); */
-            } else {
-               // Draw a line between the markers
-              const path = this.markers.map((marker) => new google.maps.LatLng(marker.lat, marker.lng));
-              const polyline = new google.maps.Polyline({
-                  path: path,
-                  strokeColor: "#FF0000",
-                  strokeOpacity: 1.0,
-                  strokeWeight: 3,
-                  map: this.map,
-              });
-              // Save the line to component data
-              this.line = polyline;
-              const data = []
-              for (let i = 0; i < this.markers.length; i++) {
-                const latLng = {
-                  lat: this.markers[i].lat,
-                  lng: this.markers[i].lng,
-                };
-                data.push(latLng);
-                if (i === this.markers.length - 1) {
-                  // Add the final marker to the allPoints array
+            const data = [];
+            const legs = response.routes[0].legs;
+            for (let i = 0; i < legs.length; i++) {
+              const steps = legs[i].steps;
+              for (let j = 0; j < steps.length; j++) {
+                const polyline = steps[j].polyline;
+                const decoded = google.maps.geometry.encoding.decodePath(
+                  polyline.points
+                );
+                for (let k = 0; k < decoded.length; k++) {
                   const latLng = {
-                    lat: this.markers[i].lat,
-                    lng: this.markers[i].lng,
+                    lat: decoded[k].lat(),
+                    lng: decoded[k].lng()
                   };
                   data.push(latLng);
+                  this.allPoints = data;
                 }
-                this.allPoints = data;
-                this.directionsCalculated = true;
               }
-              this.createBuffer()
             }
-        });
+            this.createBuffer();
+          }
+          // Set the same directions on the directionsRenderer2 object
+          // Save response to component data
+          this.directionsResponse = response;
+
+          // Add direction coordinates to allPoints array
+
+          /* this.createBuffer(); */
+        } else {
+          // Draw a line between the markers
+          const path = this.markers.map(
+            marker => new google.maps.LatLng(marker.lat, marker.lng)
+          );
+          const polyline = new google.maps.Polyline({
+            path: path,
+            strokeColor: "#FF0000",
+            strokeOpacity: 1.0,
+            strokeWeight: 3,
+            map: this.map
+          });
+          // Save the line to component data
+          this.line = polyline;
+          const data = [];
+          for (let i = 0; i < this.markers.length; i++) {
+            const latLng = {
+              lat: this.markers[i].lat,
+              lng: this.markers[i].lng
+            };
+            data.push(latLng);
+            if (i === this.markers.length - 1) {
+              // Add the final marker to the allPoints array
+              const latLng = {
+                lat: this.markers[i].lat,
+                lng: this.markers[i].lng
+              };
+              data.push(latLng);
+            }
+            this.allPoints = data;
+            this.directionsCalculated = true;
+          }
+          this.createBuffer();
+        }
+      });
     },
     createBuffer() {
-     if (this.bufferRadius < 101) {
-      if (this.markers.length === 1) {
-        console.log('first hello');
-        // Create a buffer as a circle around the marker
-        const marker = this.markers[0].marker;
-        const center = marker.getPosition();
-        const radius = this.bufferRadius * 1000;
-        const options = {
-          strokeColor: "#007aff",
-          strokeOpacity: 0.8,
-          strokeWeight: 2,
-          fillColor: "#007aff",
-          fillOpacity: 0.35,
-          map: this.map,
-          center: center,
-          radius: radius,
-        };
-        const circle = new google.maps.Circle(options);
-        // Remove the old buffer
+      if (this.bufferRadius < 101) {
+        if (this.markers.length === 1) {
+          console.log("first hello");
+          // Create a buffer as a circle around the marker
+          const marker = this.markers[0].marker;
+          const center = marker.getPosition();
+          const radius = this.bufferRadius * 1000;
+          const options = {
+            strokeColor: "#007aff",
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: "#007aff",
+            fillOpacity: 0.35,
+            map: this.map,
+            center: center,
+            radius: radius
+          };
+          const circle = new google.maps.Circle(options);
+          // Remove the old buffer
+          if (this.buffer) {
+            this.buffer.setMap(null);
+          }
+          this.buffer = circle;
+        } else if (this.directionsCalculated) {
+          console.log("second hello", this.allPoints);
+          // Remove the old buffer
+          if (this.buffer) {
+            this.buffer.setMap(null);
+          }
+          // Create a buffer around the route
+          const lineString = turf.lineString(
+            this.allPoints.map(point => [point.lng, point.lat])
+          );
+          /* console.log("line",lineString) */
+          const buffer = turf.buffer(lineString, this.bufferRadius, {
+            units: "kilometers"
+          });
+          const coordinates = buffer.geometry.coordinates[0].map(point => {
+            return { lat: point[1], lng: point[0] };
+          });
+          // Create a new buffer polygon
+          const options = {
+            paths: coordinates,
+            strokeColor: "#007aff",
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: "#007aff",
+            fillOpacity: 0.35,
+            map: this.map
+          };
+          const polygon = new google.maps.Polygon(options);
+          this.buffer = polygon;
+        }
+      } else {
         if (this.buffer) {
           this.buffer.setMap(null);
         }
-        this.buffer = circle;
-      } else if (this.directionsCalculated) {
-         console.log('second hello', this.allPoints);
-        // Remove the old buffer
-        if (this.buffer) {
-          this.buffer.setMap(null);
-        }
-        // Create a buffer around the route
-        const lineString = turf.lineString(this.allPoints.map(point => [point.lng, point.lat]));
-        /* console.log("line",lineString) */
-        const buffer = turf.buffer(lineString, this.bufferRadius, { units: "kilometers" });
-        const coordinates = buffer.geometry.coordinates[0].map((point) => {
-          return { lat: point[1], lng: point[0] };
-        });
-        // Create a new buffer polygon
-        const options = {
-          paths: coordinates,
-          strokeColor: "#007aff",
-          strokeOpacity: 0.8,
-          strokeWeight: 2,
-          fillColor: "#007aff",
-          fillOpacity: 0.35,
-          map: this.map,
-        };
-        const polygon = new google.maps.Polygon(options);
-        this.buffer = polygon;
       }
-     }else{
-      if (this.buffer) {
-          this.buffer.setMap(null);
-        }
-     }
     },
     clearFile(itemIndex) {
       document.getElementById(itemIndex).value = "";
@@ -2750,7 +2851,7 @@ export default {
     },
     editStepOne() {
       this.$refs.formWizard.changeTab(3, 0);
-      this.map.setZoom(10)
+      this.map.setZoom(10);
       window.scrollTo(0, 0);
     },
     editStepTwo() {
@@ -2999,10 +3100,9 @@ export default {
           return false;
         } else {
           this.stepThreeFlag = true;
-           this.initMap2() 
-          console.log('all markers:',this.allMarkers)
+          this.initMap2();
+          console.log("all markers:", this.allMarkers);
           return true;
-          
         }
       } else {
         Swal.fire({
@@ -3335,8 +3435,17 @@ export default {
       this.step_two[itemIndex].images.splice(imgIndex, 1);
     },
     showImg(imgIndex) {
-       this.lightBoxIndex = imgIndex; 
+      this.lightBoxIndex = imgIndex;
       this.lightBoxVisible = true;
+    },
+    lostDetailsPage() {
+      this.$router.push({
+        name: "announcement",
+        query: {
+          No: this.new_id,
+          Type: this.new_type
+        }
+      });
     },
     onCreate() {
       this.isVisible = false;
@@ -3369,28 +3478,33 @@ export default {
         };
       });
 
-      let locations = this.markers.map((marker)=>{
-        return{
-          longitude:marker.lng,
-          latitude:marker.lat,
-          name:marker.name
-        }
-      })
-      let directions ;
-      if(this.allPoints.length > 0){
-         directions = this.allPoints.map((point)=>{
-        return{
-          lng:point.lng,
-          lat:point.lat
-        }
-      })
-      }else{
-        directions =  this.markers.map((marker)=>{
-        return{
-          lat:marker.lat,
-          lng:marker.lng,
-        }
-      })
+      let locations=[];
+     
+      if (this.markers.length > 0) {
+       
+        locations = this.markers.map(marker => {
+          return {
+            longitude: marker.lng,
+            latitude: marker.lat,
+            name: marker.name
+          };
+        });
+      }
+      let directions =[];
+      if (this.allPoints.length > 0) {
+        directions = this.allPoints.map(point => {
+          return {
+            lng: point.lng,
+            lat: point.lat
+          };
+        });
+      } else {
+        directions = this.markers.map(marker => {
+          return {
+            lat: marker.lat,
+            lng: marker.lng
+          };
+        });
       }
 
       if (this.step_one.announcement_type == "Lost") {
@@ -3404,11 +3518,12 @@ export default {
             locations: locations,
             contact_details: contact,
             // matching_location: 1,
-            directions:directions,
-            location_range:this.bufferRadius
+            directions: directions,
+            location_range: this.bufferRadius
           })
           .then(resp => {
-            console.log(resp.data.data);
+            this.new_id = resp.data.data.id;
+            this.new_type = "myLost";
             this.isVisible = true;
             this.result = true;
             setTimeout(() => {
@@ -3436,11 +3551,12 @@ export default {
             locations: locations,
             contact_details: contact,
             matching: 1,
-            directions:directions,
-            location_range:this.bufferRadius
+            directions: directions,
+            location_range: this.bufferRadius
           })
           .then(resp => {
-            console.log(resp.data.data);
+            this.new_id = resp.data.data.id;
+            this.new_type = "myFound";
             this.result = true;
             this.isVisible = true;
             setTimeout(() => {
@@ -3457,37 +3573,37 @@ export default {
             });
           });
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
 <style >
-.pac-container{
-    position: absolute;
-    top: 100%;
-    left: 0;
-    float: left;
-    min-width: 10rem;
-    padding: 0.5rem 0;
-    margin: 0.125rem 0 0;
-    list-style: none;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 0.25rem;
+.pac-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  float: left;
+  min-width: 10rem;
+  padding: 0.5rem 0;
+  margin: 0.125rem 0 0;
+  list-style: none;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0.25rem;
 }
 .pac-item {
-    font-size: 12px;
-    font-family: Helvetica;
-    width: 100%;
-    color: #00531d;
-    vertical-align: middle;
-    white-space: nowrap;
-    background: none;
-    border: 0;
-  }
-  
+  font-size: 12px;
+  font-family: Helvetica;
+  width: 100%;
+  color: #00531d;
+  vertical-align: middle;
+  white-space: nowrap;
+  background: none;
+  border: 0;
+}
+
 .pac-item:hover,
 .pac-item:focus {
   color: #fff;
@@ -3499,10 +3615,10 @@ export default {
   text-decoration: none;
   background-color: #f0f0f0;
 }
-.pac-item-query{
-    color:#202842;
-    font-weight: 900;
-    font-size: 14px;
+.pac-item-query {
+  color: #202842;
+  font-weight: 900;
+  font-size: 14px;
 }
 #map-container {
   position: relative;
@@ -3533,5 +3649,4 @@ export default {
   line-height: 30px;
   padding-left: 10px;
 }
-
 </style>

@@ -37,11 +37,13 @@
                           disabled
                           :value="null"
                           class="text-primary"
-                        >Announcement Type</b-form-select-option>
+                        >Type</b-form-select-option>
                         <b-form-select-option value="lost">Lost</b-form-select-option>
                         <b-form-select-option value="found">Found</b-form-select-option>
                       </b-form-select>
-                      <b-button size="sm" class="mx-2" @click="search()">
+                      <b-button size="sm" class="mx-2" @click="search()"
+                        :disabled="!ann_type || !searchTerm"
+                      >
                         <SearchIcon />
                       </b-button>
                     </div>
@@ -123,7 +125,7 @@ export default {
       found:'Found',
       keyWord:'Lost',
       searchTerm: '',
-      ann_type: "lost",
+      ann_type: null,
       search_value: "",
     }
   },
