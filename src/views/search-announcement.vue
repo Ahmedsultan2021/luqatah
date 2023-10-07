@@ -166,12 +166,12 @@
                <b-row class="mt-2">
                 <b-col cols="12" lg="4" md="4" sm="12">
                   <b-form-group label="Latin name">
-                    <b-form-input  v-model="advanced_data.name_lt"></b-form-input>
+                    <b-form-input  v-model="advanced_data.name_lt" :state="validate_name_lt"></b-form-input>
                  </b-form-group>
                 </b-col>
                 <b-col cols="12" lg="4" md="4" sm="12">
                   <b-form-group label="Arabic name">
-                    <b-form-input  v-model="advanced_data.name_ar"></b-form-input>
+                    <b-form-input  v-model="advanced_data.name_ar" :state="validate_name_ar"></b-form-input>
                  </b-form-group>
                 </b-col>
                 <b-col cols="12" lg="4" md="4" sm="12">
@@ -392,7 +392,16 @@ export default {
   computed: {
     ...mapGetters({
       currentUser: "currentUser"
-    })
+    }),
+    validate_name_ar() {
+      // Use the regex pattern to validate the name_lt property
+      if(this.advanced_data.name_ar == null || this.advanced_data.name_ar == null) {
+        return null
+      }else{
+        const regex = /[\u0600-\u06FF ]/;
+        return regex.test(this.advanced_data.name_ar) ? true : false;
+      }
+    }
   },
   methods: {
     scrollForResultCard() {
